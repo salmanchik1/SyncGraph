@@ -25,13 +25,13 @@
      <widget class="QToolBox" name="mainOptionsBar">
       <property name="minimumSize">
        <size>
-        <width>200</width>
+        <width>300</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>200</width>
+        <width>300</width>
         <height>16777215</height>
        </size>
       </property>
@@ -46,7 +46,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>196</width>
+         <width>296</width>
          <height>702</height>
         </rect>
        </property>
@@ -69,7 +69,11 @@
          </layout>
         </item>
         <item>
-         <widget class="QListView" name="inFilesListView"/>
+         <widget class="QListView" name="inFilesListView">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::MultiSelection</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="inFilesToolButtonsLayout">
@@ -153,7 +157,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>196</width>
+         <width>296</width>
          <height>702</height>
         </rect>
        </property>

@@ -37,12 +37,11 @@ class MainWindow(QMainWindow):
         self.ui = Ui_syncGraphMainWindow()
         self.ui.setupUi(self)
         # Import Window state from settings file
-        self.import_state()
         self.in_files = InFilesList()
         self.ui.inFilesListView.setModel(self.in_files)
         self.ui.addInFileButton.clicked.connect(self.add_in_files)
         self.ui.removeInFileButton.clicked.connect(self.delete_in_files)
-        # self.refresh_in_files_ui()
+        self.import_state()
 
     def add_in_files(self):
         filenames, filetype = QFileDialog.getOpenFileNames(
@@ -59,9 +58,9 @@ class MainWindow(QMainWindow):
         indexes = self.ui.inFilesListView.selectedIndexes()
         if indexes:
             # Indexes is a list of a single item in single-select mode.
-            index = indexes[0]
-            # Remove the item and refresh.
-            del self.in_files.paths[index.row()]
+            for index in reversed(indexes):
+                # Remove the item and refresh.
+                del self.in_files.paths[index.row()]
             self.in_files.layoutChanged.emit()
             # Clear the selection (as it is no longer valid).
             self.ui.inFilesListView.clearSelection()
@@ -78,12 +77,14 @@ class MainWindow(QMainWindow):
 
     def import_state(self):
         if not os.path.exists(SET_F_NAME):
-            self.state_ui['in_file_path'] = os.getcwd()
             return False
         with open(SET_F_NAME, mode='r', encoding='utf-8') as f:
             self.state_ui = json.load(f)
+        if 'paths' in self.state_ui.keys():
+            self.in_files.paths = self.state_ui['paths']
 
     def export_state(self):
+        self.state_ui['paths'] = self.in_files.paths
         with open(SET_F_NAME, mode='w', encoding='utf-8') as f:
             json.dump(self.state_ui, f, indent=2)
 
