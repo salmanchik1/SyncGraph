@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
             # Don't add empty strings and existing files.
             if filename and (filename not in [x[1] for x in self.in_files.paths]):
                 # Access the list via the model.
-                self.in_files.paths.append((False, filename))
+                self.in_files.paths.append([False, filename])
                 # Trigger refresh.
                 self.in_files.layoutChanged.emit()
 
