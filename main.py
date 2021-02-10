@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtCore import QDir, QAbstractListModel, Qt
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox
 
 from SyncGraph import Ui_syncGraphMainWindow  # Graphical user interface
 from matplotlib import pyplot as plt
@@ -18,11 +18,16 @@ class InFilesList(QAbstractListModel):
         self.paths = paths or []
 
     def data(self, index, role):
+        status, text = self.paths[index.row()]
         if role == Qt.DisplayRole:
-            # See below for the data structure.
-            status, text = self.paths[index.row()]
-            # Return the paths text only
+            # Return the name only
+            return os.path.basename(text)
+        if role == Qt.ToolTipRole:
+            # Return full path
             return text
+        if role == Qt.CheckStateRole:
+            return status
+
 
     def rowCount(self, index):
         return len(self.paths)
@@ -41,7 +46,20 @@ class MainWindow(QMainWindow):
         self.ui.inFilesListView.setModel(self.in_files)
         self.ui.addInFileButton.clicked.connect(self.add_in_files)
         self.ui.removeInFileButton.clicked.connect(self.delete_in_files)
+        self.ui.checkFilesButton.clicked.connect(self.change_in_files_status)
         self.import_state()
+
+    def change_in_files_status(self):
+        indexes = self.ui.inFilesListView.selectedIndexes()
+        if indexes:
+            value = False
+            for index in indexes:
+                if not self.in_files.paths[index.row()][0]:
+                    value = True
+                    break
+            for index in indexes:
+                self.in_files.paths[index.row()][0] = value
+                self.in_files.layoutChanged.emit()
 
     def add_in_files(self):
         filenames, filetype = QFileDialog.getOpenFileNames(
@@ -55,6 +73,11 @@ class MainWindow(QMainWindow):
                 self.in_files.layoutChanged.emit()
 
     def delete_in_files(self):
+        if QMessageBox.question(
+            self, 'Question', 'Are you sure you want to delete items from the list?',
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        ) == QMessageBox.No:
+            return
         indexes = self.ui.inFilesListView.selectedIndexes()
         if indexes:
             # Indexes is a list of a single item in single-select mode.
