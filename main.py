@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import h5py
 from PyQt5.QtCore import QAbstractListModel, Qt, QSize
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox, QDoubleSpinBox
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox, QDoubleSpinBox, QLabel
 
 from SyncGraph import Ui_syncGraphMainWindow  # Graphical user interface
 from matplotlib import pyplot as plt
@@ -80,19 +80,26 @@ class MainWindow(QMainWindow):
             print(f'Exception:{Exception}\n'
                   "Couldn't read a file.")
             return
-        layout = self.ui.shiftsGroupBox.layout()
+        layout = self.ui.shiftsScrollArea.widget().layout()
         self.clear_layout(layout)
-        for i_sbx, _ in enumerate(self.sbx_files):
-            widget = QDoubleSpinBox(self.ui.shiftsGroupBox)
-            widget.setMinimumSize(QSize(100, 28))
-            widget.setObjectName(f"ShiftEdit_{i_sbx}")
-            layout.addWidget(widget)
+        self.populate_shifts(layout)
 
     def clear_layout(self, layout):
         while layout.count():
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
+
+    def populate_shifts(self, layout):
+        checked_list = [x[1] for x in self.in_files.paths if x[0]]
+        for i_sbx, sbx_file in enumerate(self.sbx_files):
+            label = QLabel(layout.parent())
+            label.setObjectName(f"ShiftLabel_{i_sbx}")
+            label.setText(f"File_{i_sbx}: {os.path.basename(checked_list[i_sbx])}")
+            edit_field = QDoubleSpinBox(layout.parent())
+            edit_field.setObjectName(f"ShiftEdit_{i_sbx}")
+            layout.addWidget(label, i_sbx, 0, 1, 1)
+            layout.addWidget(edit_field, i_sbx, 1, 1, 1)
 
     def change_in_files_status(self):
         indexes = self.ui.inFilesListView.selectedIndexes()

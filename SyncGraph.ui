@@ -240,7 +240,7 @@
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>300</height>
+            <height>370</height>
            </size>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
@@ -446,7 +446,38 @@
              <property name="title">
               <string>dT (each file shifts)</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_4"/>
+             <layout class="QGridLayout" name="gridLayout_5">
+              <item row="0" column="0">
+               <widget class="QScrollArea" name="shiftsScrollArea">
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="horizontalScrollBarPolicy">
+                 <enum>Qt::ScrollBarAlwaysOff</enum>
+                </property>
+                <property name="sizeAdjustPolicy">
+                 <enum>QAbstractScrollArea::AdjustToContents</enum>
+                </property>
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>508</width>
+                   <height>133</height>
+                  </rect>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_7"/>
+                </widget>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
