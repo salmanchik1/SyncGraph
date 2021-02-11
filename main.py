@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import h5py
-from PyQt5.QtCore import QDir, QAbstractListModel, Qt
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox
+from PyQt5.QtCore import QAbstractListModel, Qt, QSize
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox, QDoubleSpinBox
 
 from SyncGraph import Ui_syncGraphMainWindow  # Graphical user interface
 from matplotlib import pyplot as plt
@@ -63,13 +63,36 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         # Create in_files model and connect it to listview
         self.in_files = InFilesList()
+        self.sbx_files = None  # Will load h5 files in this variable
         self.ui.inFilesListView.setModel(self.in_files)
         # Buttons and other objects methods
+        self.ui.loadButton.clicked.connect(self.load_h5_files)
         self.ui.addInFileButton.clicked.connect(self.add_in_files)
         self.ui.removeInFileButton.clicked.connect(self.delete_in_files)
         self.ui.checkFilesButton.clicked.connect(self.change_in_files_status)
         # Import Window state from settings file
         self.import_state()
+
+    def load_h5_files(self):
+        try:
+            self.sbx_files = import_h5([x[1] for x in self.in_files.paths if x[0]])
+        except Exception:
+            print(f'Exception:{Exception}\n'
+                  "Couldn't read a file.")
+            return
+        layout = self.ui.shiftsGroupBox.layout()
+        self.clear_layout(layout)
+        for i_sbx, _ in enumerate(self.sbx_files):
+            widget = QDoubleSpinBox(self.ui.shiftsGroupBox)
+            widget.setMinimumSize(QSize(100, 28))
+            widget.setObjectName(f"ShiftEdit_{i_sbx}")
+            layout.addWidget(widget)
+
+    def clear_layout(self, layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
 
     def change_in_files_status(self):
         indexes = self.ui.inFilesListView.selectedIndexes()
