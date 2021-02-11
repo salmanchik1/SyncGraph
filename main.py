@@ -53,6 +53,22 @@ class InFilesList(QAbstractListModel):
         return len(self.paths)
 
 
+class SensorsList(QAbstractListModel):
+    """List of sensors synchronization model"""
+    def __init__(self, *args, ids=None, **kwargs):
+        super(SensorsList, self).__init__(*args, **kwargs)
+        self.ids = ids or []
+
+    def data(self, index, role):
+        text = self.ids[index.row()]
+        if role == Qt.DisplayRole:
+            # Return the name only
+            return text
+
+    def rowCount(self, index):
+        return len(self.ids)
+
+
 class MainWindow(QMainWindow):
     """The main window of the application."""
     def __init__(self, *args, **kwargs):
@@ -64,6 +80,7 @@ class MainWindow(QMainWindow):
         # Create in_files model and connect it to listview
         self.in_files = InFilesList()
         self.sbx_files = None  # Will load h5 files in this variable
+        self.sensors = None  # Will load sensors names in this variable
         self.ui.inFilesListView.setModel(self.in_files)
         # Buttons and other objects methods
         self.ui.loadButton.clicked.connect(self.load_h5_files)
@@ -72,6 +89,15 @@ class MainWindow(QMainWindow):
         self.ui.checkFilesButton.clicked.connect(self.change_in_files_status)
         # Import Window state from settings file
         self.import_state()
+
+    def populate_sensors(self):
+        if len(self.sbx_files) > 0:
+            ksen = set()
+            for _, sbx_file in self.sbx_files.items():
+                ksen |= set(f'{x:03.0f}' for x in sbx_file['field'][0])
+            self.sensors = SensorsList(ids=sorted(ksen))
+            self.ui.sensorsListView.setModel(self.sensors)
+            # self.sensors.layoutChanged.emit()
 
     def load_h5_files(self):
         try:
@@ -83,6 +109,7 @@ class MainWindow(QMainWindow):
         layout = self.ui.shiftsScrollArea.widget().layout()
         self.clear_layout(layout)
         self.populate_shifts(layout)
+        self.populate_sensors()
 
     def clear_layout(self, layout):
         while layout.count():
@@ -111,7 +138,7 @@ class MainWindow(QMainWindow):
                     break
             for index in indexes:
                 self.in_files.paths[index.row()][0] = value
-                self.in_files.layoutChanged.emit()
+            self.in_files.layoutChanged.emit()
 
     def add_in_files(self):
         filenames, filetype = QFileDialog.getOpenFileNames(
@@ -121,8 +148,8 @@ class MainWindow(QMainWindow):
             if filename and (filename not in [x[1] for x in self.in_files.paths]):
                 # Access the list via the model.
                 self.in_files.paths.append([False, filename])
-                # Trigger refresh.
-                self.in_files.layoutChanged.emit()
+        # Trigger refresh.
+        self.in_files.layoutChanged.emit()
 
     def delete_in_files(self):
         if QMessageBox.question(

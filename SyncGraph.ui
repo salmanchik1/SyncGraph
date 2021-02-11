@@ -204,7 +204,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="listView"/>
+        <widget class="QListView" name="sensorsListView"/>
        </item>
       </layout>
      </widget>
