@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import h5py
 from PyQt5.QtCore import QDir, QAbstractListModel, Qt
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox
 
@@ -6,9 +7,29 @@ from SyncGraph import Ui_syncGraphMainWindow  # Graphical user interface
 from matplotlib import pyplot as plt
 import os
 import json
+import numpy as np
 
 
 SET_F_NAME = 'settings.json'
+
+
+def import_h5(file_paths):
+    """Import one or plural h5 files
+    Args:
+        file_paths (list): h5 files locations
+    Return:
+        sbx_i (dict): data of files
+    """
+    sbx_i = dict()
+    for n_sbx, file_path in enumerate(file_paths):
+        with h5py.File(file_path, 'r') as f:
+            keys = list(f.keys())
+            print(keys)
+            sbx_f = f.get(keys[0])
+            sbx_i[n_sbx] = dict()
+            for key in sbx_f:
+                sbx_i[n_sbx][key] = np.array(sbx_f[key])
+    return sbx_i
 
 
 class InFilesList(QAbstractListModel):
@@ -28,7 +49,6 @@ class InFilesList(QAbstractListModel):
         if role == Qt.CheckStateRole:
             return status
 
-
     def rowCount(self, index):
         return len(self.paths)
 
@@ -41,12 +61,14 @@ class MainWindow(QMainWindow):
         # Load user interface generated in QtDesigner
         self.ui = Ui_syncGraphMainWindow()
         self.ui.setupUi(self)
-        # Import Window state from settings file
+        # Create in_files model and connect it to listview
         self.in_files = InFilesList()
         self.ui.inFilesListView.setModel(self.in_files)
+        # Buttons and other objects methods
         self.ui.addInFileButton.clicked.connect(self.add_in_files)
         self.ui.removeInFileButton.clicked.connect(self.delete_in_files)
         self.ui.checkFilesButton.clicked.connect(self.change_in_files_status)
+        # Import Window state from settings file
         self.import_state()
 
     def change_in_files_status(self):
@@ -82,8 +104,9 @@ class MainWindow(QMainWindow):
         if indexes:
             # Indexes is a list of a single item in single-select mode.
             for index in reversed(indexes):
-                # Remove the item and refresh.
+                # Remove the item
                 del self.in_files.paths[index.row()]
+            # Refresh after all
             self.in_files.layoutChanged.emit()
             # Clear the selection (as it is no longer valid).
             self.ui.inFilesListView.clearSelection()
