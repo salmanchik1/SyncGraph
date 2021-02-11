@@ -165,8 +165,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>96</width>
-         <height>26</height>
+         <width>296</width>
+         <height>700</height>
         </rect>
        </property>
        <attribute name="label">
@@ -240,241 +240,213 @@
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>250</height>
+            <height>300</height>
            </size>
           </property>
-          <widget class="QLabel" name="label">
-           <property name="geometry">
-            <rect>
-             <x>110</x>
-             <y>30</y>
-             <width>101</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>tstrt (window start)</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_2">
-           <property name="geometry">
-            <rect>
-             <x>110</x>
-             <y>60</y>
-             <width>101</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>L (window lenght)</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_3">
-           <property name="geometry">
-            <rect>
-             <x>110</x>
-             <y>90</y>
-             <width>111</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>dT (each file shifts)</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_4">
-           <property name="geometry">
-            <rect>
-             <x>110</x>
-             <y>120</y>
-             <width>151</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Fpass1 (start frequency)</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_5">
-           <property name="geometry">
-            <rect>
-             <x>350</x>
-             <y>30</y>
-             <width>131</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Fpass2 (end frequency)</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_6">
-           <property name="geometry">
-            <rect>
-             <x>350</x>
-             <y>60</y>
-             <width>191</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>mode (application compiling mode)</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_7">
-           <property name="geometry">
-            <rect>
-             <x>350</x>
-             <y>90</y>
-             <width>181</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>lev (incoming signal noise level)</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_8">
-           <property name="geometry">
-            <rect>
-             <x>350</x>
-             <y>120</y>
-             <width>161</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>ksen (meter sensor number)</string>
-           </property>
-          </widget>
-          <widget class="QDoubleSpinBox" name="tstrtEdit">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>20</y>
-             <width>100</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>28</height>
-            </size>
-           </property>
-          </widget>
-          <widget class="QDoubleSpinBox" name="LEdit">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>50</y>
-             <width>100</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>28</height>
-            </size>
-           </property>
-          </widget>
-          <widget class="QDoubleSpinBox" name="dTEdit">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>80</y>
-             <width>100</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>28</height>
-            </size>
-           </property>
-          </widget>
-          <widget class="QDoubleSpinBox" name="Fpass1Edit">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>110</y>
-             <width>100</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>28</height>
-            </size>
-           </property>
-          </widget>
-          <widget class="QDoubleSpinBox" name="levEdit">
-           <property name="geometry">
-            <rect>
-             <x>250</x>
-             <y>80</y>
-             <width>100</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>28</height>
-            </size>
-           </property>
-          </widget>
-          <widget class="QDoubleSpinBox" name="ksenEdit">
-           <property name="geometry">
-            <rect>
-             <x>250</x>
-             <y>110</y>
-             <width>100</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>28</height>
-            </size>
-           </property>
-          </widget>
-          <widget class="QDoubleSpinBox" name="modeEdit">
-           <property name="geometry">
-            <rect>
-             <x>250</x>
-             <y>50</y>
-             <width>100</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>28</height>
-            </size>
-           </property>
-          </widget>
-          <widget class="QDoubleSpinBox" name="Fpass2Edit">
-           <property name="geometry">
-            <rect>
-             <x>250</x>
-             <y>20</y>
-             <width>100</width>
-             <height>28</height>
-            </rect>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>28</height>
-            </size>
-           </property>
-          </widget>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="groupBox_3">
+             <property name="title">
+              <string>Window</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>tstrt (start)</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>L ( lenght)</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QSpinBox" name="LEdit">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>28</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="tstrtEdit">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>28</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QGroupBox" name="groupBox_2">
+             <property name="title">
+              <string>Frequency</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="2" column="1">
+               <widget class="QSpinBox" name="Fpass2Edit">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>28</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="Fpass1Edit">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>28</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Fpass1 (start)</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>Fpass2 (end)</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="groupBox">
+             <property name="title">
+              <string>Mode (compiling mode)</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QRadioButton" name="radioButton">
+                <property name="text">
+                 <string>debugging</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="radioButton_2">
+                <property name="text">
+                 <string>uploading</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QGroupBox" name="groupBox_4">
+             <property name="title">
+              <string>Other</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="ksenEdit">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>28</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="levEdit">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>28</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>lev (incoming signal noise level)</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>ksen (meter sensor number)</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QGroupBox" name="groupBox_5">
+             <property name="title">
+              <string>dT (each file shifts)</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_5">
+              <item row="0" column="0">
+               <widget class="QDoubleSpinBox" name="dTEdit">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>28</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="dTEdit_2">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>28</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
