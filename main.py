@@ -24,7 +24,6 @@ def import_h5(file_paths):
     for n_sbx, file_path in enumerate(file_paths):
         with h5py.File(file_path, 'r') as f:
             keys = list(f.keys())
-            print(keys)
             sbx_f = f.get(keys[0])
             sbx_i[n_sbx] = dict()
             for key in sbx_f:
