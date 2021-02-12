@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import h5py
-from PyQt5.QtCore import QAbstractListModel, Qt, QSize
+from PyQt5.QtCore import QAbstractListModel, Qt, QSize, QAbstractItemModel
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox, QDoubleSpinBox, QLabel
 
 from SyncGraph import Ui_syncGraphMainWindow  # Graphical user interface
@@ -69,6 +69,69 @@ class SensorsList(QAbstractListModel):
         return len(self.ids)
 
 
+class CalculationsRunner():
+    """Value synchronizes with visual component"""
+    def __init__(self, *args, main, **kwargs):
+        self.main = main
+        main.ui.tstrtEdit.textChanged.connect(self.tstrt_autochange)
+        main.ui.LEdit.textChanged.connect(self.L_autochange)
+        main.ui.LstdEdit.textChanged.connect(self.Lstd_autochange)
+        main.ui.Fpass1Edit.textChanged.connect(self.Fpass1_autochange)
+        main.ui.Fpass2Edit.textChanged.connect(self.Fpass2_autochange)
+        main.ui.dfEdit.textChanged.connect(self.df_autochange)
+        main.ui.levEdit.textChanged.connect(self.lev_autochange)
+        self.tstrt_autochange()
+        self.L_autochange()
+        self.Lstd_autochange()
+        self.Fpass1_autochange()
+        self.Fpass2_autochange()
+        self.df_autochange()
+        self.lev_autochange()
+        if main.ui.unloadingRadioButton.isChecked():  # 0 - debugging, 1 - unloading
+            self.mode = 'unloading'
+        elif main.ui.debuggingRadioButton.isChecked():
+            self.mode = 'debugging'
+        self.extraFUP = main.ui.extraFUPCheckBox.isChecked()
+        self.nsen = 0
+        main.ui.sensorsListView.clicked.connect(self.choose_nsen)
+        # selected_index = main.ui.sensorsListView.selectedIndexes()[0].text()
+        # self.nsen = [x for i, x in enumerate(main.ksen[selected_index]) if i in main.in_files.checked_list]
+        # self.dT = or []
+        print(self.nsen)
+
+    def choose_nsen(self):
+        try:
+            selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row()
+        except Exception:
+            print('Could not get sensor number')
+            return
+        self.nsen = self.main.ksen[f'{selected_index:05.0f}']
+        print(self.nsen)
+
+    def tstrt_autochange(self):
+        self.tstrt = self.main.ui.tstrtEdit.value()
+
+    def L_autochange(self):
+        self.L = self.main.ui.LEdit.value()
+
+    def Lstd_autochange(self):
+        self.Lstd = self.main.ui.LstdEdit.value()
+
+    def Fpass1_autochange(self):
+        self.Fpass1 = self.main.ui.Fpass1Edit.value()
+
+    def Fpass2_autochange(self):
+        self.Fpass2 = self.main.ui.Fpass2Edit.value()
+
+    def df_autochange(self):
+        self.df = self.main.ui.dfEdit.value()
+
+    def lev_autochange(self):
+        self.lev = self.main.ui.levEdit.value()
+
+
+
+
 class MainWindow(QMainWindow):
     """The main window of the application."""
 
@@ -90,12 +153,10 @@ class MainWindow(QMainWindow):
         self.ui.checkFilesButton.clicked.connect(self.change_in_files_status)
         # Import Window state from settings file
         self.import_state()
+        self.calculations = None
 
     def populate_sensors(self):
         if len(self.sbx_files) > 0:
-            # ksen = set()
-            # for _, sbx_file in self.sbx_files.items():
-            #     ksen |= set(f'{x:04.0f}' for x in sbx_file['field'][0])
             self.ksen = dict()
             for file_id, sbx_file in enumerate(self.sbx_files.items()):
                 for i, x in enumerate(sbx_file[1]['field'][0]):
@@ -111,8 +172,9 @@ class MainWindow(QMainWindow):
             self.ui.sensorsListView.setModel(self.sensors)
 
     def load_h5_files(self):
+        self.in_files.checked_list = [x[1] for x in self.in_files.paths if x[0]]
         try:
-            self.sbx_files = import_h5([x[1] for x in self.in_files.paths if x[0]])
+            self.sbx_files = import_h5(self.in_files.checked_list)
         except Exception:
             print(f'Exception:{Exception}\n'
                   "Couldn't read a file.")
@@ -121,6 +183,7 @@ class MainWindow(QMainWindow):
         self.clear_layout(layout)
         self.populate_shifts(layout)
         self.populate_sensors()
+        self.calculations = CalculationsRunner(main=self)
 
     def clear_layout(self, layout):
         while layout.count():
@@ -129,11 +192,10 @@ class MainWindow(QMainWindow):
                 child.widget().deleteLater()
 
     def populate_shifts(self, layout):
-        checked_list = [x[1] for x in self.in_files.paths if x[0]]
         for i_sbx, sbx_file in enumerate(self.sbx_files):
             label = QLabel(layout.parent())
             label.setObjectName(f"ShiftLabel_{i_sbx}")
-            label.setText(f"File_{i_sbx}: {os.path.basename(checked_list[i_sbx])}")
+            label.setText(f"File_{i_sbx}: {os.path.basename(self.in_files.checked_list[i_sbx])}")
             edit_field = QDoubleSpinBox(layout.parent())
             edit_field.setObjectName(f"ShiftEdit_{i_sbx}")
             layout.addWidget(label, i_sbx, 0, 1, 1)
