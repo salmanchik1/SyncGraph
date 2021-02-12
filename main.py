@@ -9,7 +9,6 @@ import os
 import json
 import numpy as np
 
-
 SET_F_NAME = 'settings.json'
 
 
@@ -33,6 +32,7 @@ def import_h5(file_paths):
 
 class InFilesList(QAbstractListModel):
     """Inner files list synchronization model"""
+
     def __init__(self, *args, paths=None, **kwargs):
         super(InFilesList, self).__init__(*args, **kwargs)
         self.paths = paths or []
@@ -54,12 +54,13 @@ class InFilesList(QAbstractListModel):
 
 class SensorsList(QAbstractListModel):
     """List of sensors synchronization model"""
+
     def __init__(self, *args, ids=None, **kwargs):
         super(SensorsList, self).__init__(*args, **kwargs)
         self.ids = ids or []
 
     def data(self, index, role):
-        text = self.ids[index.row()]
+        text = self.ids[index.row()]  # [0]
         if role == Qt.DisplayRole:
             # Return the name only
             return text
@@ -70,6 +71,7 @@ class SensorsList(QAbstractListModel):
 
 class MainWindow(QMainWindow):
     """The main window of the application."""
+
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.state_ui = dict()
@@ -91,12 +93,22 @@ class MainWindow(QMainWindow):
 
     def populate_sensors(self):
         if len(self.sbx_files) > 0:
-            ksen = set()
-            for _, sbx_file in self.sbx_files.items():
-                ksen |= set(f'{x:03.0f}' for x in sbx_file['field'][0])
-            self.sensors = SensorsList(ids=sorted(ksen))
+            # ksen = set()
+            # for _, sbx_file in self.sbx_files.items():
+            #     ksen |= set(f'{x:04.0f}' for x in sbx_file['field'][0])
+            self.ksen = dict()
+            for file_id, sbx_file in enumerate(self.sbx_files.items()):
+                for i, x in enumerate(sbx_file[1]['field'][0]):
+                    s_name = f'{x:05.0f}'
+                    if s_name not in self.ksen:
+                        self.ksen[s_name] = [None for x in range(file_id)]
+                    self.ksen[f'{s_name}'].append(i)
+                for i in self.ksen.values():
+                    if len(i) < file_id + 1:
+                        i.append(None)
+
+            self.sensors = SensorsList(ids=sorted(self.ksen))
             self.ui.sensorsListView.setModel(self.sensors)
-            # self.sensors.layoutChanged.emit()
 
     def load_h5_files(self):
         try:
@@ -152,8 +164,8 @@ class MainWindow(QMainWindow):
 
     def delete_in_files(self):
         if QMessageBox.question(
-            self, 'Question', 'Are you sure you want to delete items from the list?',
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+                self, 'Question', 'Are you sure you want to delete items from the list?',
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         ) == QMessageBox.No:
             return
         indexes = self.ui.inFilesListView.selectedIndexes()
