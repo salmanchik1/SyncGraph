@@ -73,20 +73,21 @@ class CalculationsRunner():
     """Value synchronizes with visual component"""
     def __init__(self, *args, main, **kwargs):
         self.main = main
-        main.ui.tstrtEdit.textChanged.connect(self.tstrt_autochange)
-        main.ui.LEdit.textChanged.connect(self.L_autochange)
-        main.ui.LstdEdit.textChanged.connect(self.Lstd_autochange)
-        main.ui.Fpass1Edit.textChanged.connect(self.Fpass1_autochange)
-        main.ui.Fpass2Edit.textChanged.connect(self.Fpass2_autochange)
-        main.ui.dfEdit.textChanged.connect(self.df_autochange)
-        main.ui.levEdit.textChanged.connect(self.lev_autochange)
-        self.tstrt_autochange()
-        self.L_autochange()
-        self.Lstd_autochange()
-        self.Fpass1_autochange()
-        self.Fpass2_autochange()
-        self.df_autochange()
-        self.lev_autochange()
+        main.ui.tstrtEdit.textChanged.connect(lambda: self.autochange('tstrt', main.ui.tstrtEdit))
+        main.ui.LEdit.textChanged.connect(lambda: self.autochange('L', main.ui.LEdit))
+        main.ui.LstdEdit.textChanged.connect(lambda: self.autochange('Lstd', main.ui.LstdEdit))
+        main.ui.Fpass1Edit.textChanged.connect(lambda: self.autochange('Fpass1', main.ui.Fpass1Edit))
+        main.ui.Fpass2Edit.textChanged.connect(lambda: self.autochange('Fpass2', main.ui.Fpass2Edit))
+        main.ui.dfEdit.textChanged.connect(lambda: self.autochange('df', main.ui.dfEdit))
+        main.ui.levEdit.textChanged.connect(lambda: self.autochange('lev', main.ui.levEdit))
+        main.ui.tstrtEdit.textChanged.connect(lambda: self.autochange('tstrt', main.ui.tstrtEdit))
+        # self.tstrt_autochange()
+        # self.L_autochange()
+        # self.Lstd_autochange()
+        # self.Fpass1_autochange()
+        # self.Fpass2_autochange()
+        # self.df_autochange()
+        # self.lev_autochange()
         if main.ui.unloadingRadioButton.isChecked():  # 0 - debugging, 1 - unloading
             self.mode = 'unloading'
         elif main.ui.debuggingRadioButton.isChecked():
@@ -94,10 +95,11 @@ class CalculationsRunner():
         self.extraFUP = main.ui.extraFUPCheckBox.isChecked()
         self.nsen = 0
         main.ui.sensorsListView.clicked.connect(self.choose_nsen)
-        # selected_index = main.ui.sensorsListView.selectedIndexes()[0].text()
-        # self.nsen = [x for i, x in enumerate(main.ksen[selected_index]) if i in main.in_files.checked_list]
         # self.dT = or []
         print(self.nsen)
+        for child in self.main.ui.shiftsScrollArea.widget().children():
+            if isinstance(child, QDoubleSpinBox):
+                child.textChanged.connect(lambda: self.dT_autochange(number=child.value()))
 
     def choose_nsen(self):
         try:
@@ -108,29 +110,8 @@ class CalculationsRunner():
         self.nsen = self.main.ksen[f'{selected_index:05.0f}']
         print(self.nsen)
 
-    def tstrt_autochange(self):
-        self.tstrt = self.main.ui.tstrtEdit.value()
-
-    def L_autochange(self):
-        self.L = self.main.ui.LEdit.value()
-
-    def Lstd_autochange(self):
-        self.Lstd = self.main.ui.LstdEdit.value()
-
-    def Fpass1_autochange(self):
-        self.Fpass1 = self.main.ui.Fpass1Edit.value()
-
-    def Fpass2_autochange(self):
-        self.Fpass2 = self.main.ui.Fpass2Edit.value()
-
-    def df_autochange(self):
-        self.df = self.main.ui.dfEdit.value()
-
-    def lev_autochange(self):
-        self.lev = self.main.ui.levEdit.value()
-
-
-
+    def autochange(self, variable_name, field):
+        self.__dict__[variable_name] = field.value()
 
 class MainWindow(QMainWindow):
     """The main window of the application."""
