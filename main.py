@@ -78,24 +78,29 @@ class CalculationsRunner():
     """Value synchronizes with visual component"""
     def __init__(self, *args, main, **kwargs):
         self.main = main
-        self.variable_names = ['tstrt', 'L', 'Lstd', 'Fpass1', 'Fpass2', 'df', 'lev']
-        i_variable = 0
-        for child in self.main.ui.shiftsScrollArea.widget().children():
-            if isinstance(child, QDoubleSpinBox):
-                self.variable_names.append(f'dT{i_variable}')
-                i_variable += 1
-        for variable_name in self.variable_names:
-            self.main.ui.__dict__[f'{variable_name}Edit'].textChanged.connect(
-                partial(self.autochange, variable_name=variable_name))
+        self.populate_variables()
         if main.ui.unloadingRadioButton.isChecked():  # 0 - debugging, 1 - unloading
             self.mode = 'unloading'
         elif main.ui.debuggingRadioButton.isChecked():
             self.mode = 'debugging'
         self.extraFUP = main.ui.extraFUPCheckBox.isChecked()
+        # nsen holds the index of each sensor data in sbx files structures
         self.nsen = 0
         main.ui.sensorsListView.clicked.connect(self.choose_nsen)
-        # self.dT = or []
-        print(self.nsen)
+        # print(self.nsen)
+
+    def populate_variables(self):
+        self.variables_names = ['tstrt', 'L', 'Lstd', 'Fpass1', 'Fpass2', 'df', 'lev']
+        # Add shifts to variables_names list
+        i_variable = 0
+        for child in self.main.ui.shiftsScrollArea.widget().children():
+            if isinstance(child, QDoubleSpinBox):
+                self.variables_names.append(f'dT{i_variable}')
+                i_variable += 1
+        # All the fields values being saved to variables by autochange function
+        for variable_name in self.variables_names:
+            self.main.ui.__dict__[f'{variable_name}Edit'].textChanged.connect(
+                partial(self.autochange, variable_name=variable_name))
 
     def choose_nsen(self):
         try:
@@ -104,7 +109,7 @@ class CalculationsRunner():
             print('Could not get sensor number')
             return
         self.nsen = self.main.ksen[f'{selected_index:05.0f}']
-        print(self.nsen)
+        # print(self.nsen)
 
     def autochange(self, variable_name):
         # I take the value from the gui widget and put it in the variable named the same
