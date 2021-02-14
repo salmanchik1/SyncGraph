@@ -51,6 +51,9 @@ class InFilesList(QAbstractListModel):
     def rowCount(self, index):
         return len(self.paths)
 
+    def dropEvent(self, event):
+        print(dropped)
+
 
 class SensorsList(QAbstractListModel):
     """List of sensors synchronization model"""
@@ -131,7 +134,7 @@ class MainWindow(QMainWindow):
         self.ui.loadButton.clicked.connect(self.load_h5_files)
         self.ui.addInFileButton.clicked.connect(self.add_in_files)
         self.ui.removeInFileButton.clicked.connect(self.delete_in_files)
-        self.ui.checkFilesButton.clicked.connect(self.change_in_files_status)
+        self.ui.inFilesListView.mouseReleaseEvent = lambda x: self.change_in_files_status(x)
         # Import Window state from settings file
         self.import_state()
         self.calculations = None
@@ -182,7 +185,7 @@ class MainWindow(QMainWindow):
             layout.addWidget(label, i_sbx, 0, 1, 1)
             layout.addWidget(edit_field, i_sbx, 1, 1, 1)
 
-    def change_in_files_status(self):
+    def change_in_files_status(self, e=None):
         indexes = self.ui.inFilesListView.selectedIndexes()
         if indexes:
             value = False
@@ -193,6 +196,8 @@ class MainWindow(QMainWindow):
             for index in indexes:
                 self.in_files.paths[index.row()][0] = value
             self.in_files.layoutChanged.emit()
+            self.ui.inFilesListView.reset()
+
 
     def add_in_files(self):
         filenames, filetype = QFileDialog.getOpenFileNames(

@@ -38,19 +38,6 @@
       <widget class="QWidget" name="mainOptionsBarPage1">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QPushButton" name="checkFilesButton">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>40</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Check/Uncheck selected</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QListView" name="inFilesListView">
           <property name="toolTipDuration">
            <number>0</number>
@@ -59,7 +46,7 @@
            <set>QAbstractItemView::CurrentChanged|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
           </property>
           <property name="selectionMode">
-           <enum>QAbstractItemView::MultiSelection</enum>
+           <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectItems</enum>
@@ -150,7 +137,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>274</width>
-                <height>82</height>
+                <height>104</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="gridLayout_7"/>
