@@ -215,16 +215,16 @@ class MainWindow(QMainWindow):
 
     def delete_in_files(self):
         if QMessageBox.question(
-                self, 'Question', 'Are you sure you want to delete items from the list?',
+                self, 'Question', 'Are you sure you want to delete checked items from the list?',
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         ) == QMessageBox.No:
             return
-        indexes = self.ui.inFilesListView.selectedIndexes()
+        indexes = [i for i, x in enumerate(self.in_files.paths) if x[0]]
         if indexes:
             # Indexes is a list of a single item in single-select mode.
             for index in reversed(indexes):
                 # Remove the item
-                del self.in_files.paths[index.row()]
+                del self.in_files.paths[index]
             # Refresh after all
             self.in_files.layoutChanged.emit()
             # Clear the selection (as it is no longer valid).
