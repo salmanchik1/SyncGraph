@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from functools import partial
+
 import h5py
 from PyQt5.QtCore import QAbstractListModel, Qt, QSize, QAbstractItemModel
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox, QDoubleSpinBox, QLabel
@@ -76,21 +78,15 @@ class CalculationsRunner():
     """Value synchronizes with visual component"""
     def __init__(self, *args, main, **kwargs):
         self.main = main
-        main.ui.tstrtEdit.textChanged.connect(lambda: self.autochange('tstrt', main.ui.tstrtEdit))
-        main.ui.LEdit.textChanged.connect(lambda: self.autochange('L', main.ui.LEdit))
-        main.ui.LstdEdit.textChanged.connect(lambda: self.autochange('Lstd', main.ui.LstdEdit))
-        main.ui.Fpass1Edit.textChanged.connect(lambda: self.autochange('Fpass1', main.ui.Fpass1Edit))
-        main.ui.Fpass2Edit.textChanged.connect(lambda: self.autochange('Fpass2', main.ui.Fpass2Edit))
-        main.ui.dfEdit.textChanged.connect(lambda: self.autochange('df', main.ui.dfEdit))
-        main.ui.levEdit.textChanged.connect(lambda: self.autochange('lev', main.ui.levEdit))
-        main.ui.tstrtEdit.textChanged.connect(lambda: self.autochange('tstrt', main.ui.tstrtEdit))
-        # self.tstrt_autochange()
-        # self.L_autochange()
-        # self.Lstd_autochange()
-        # self.Fpass1_autochange()
-        # self.Fpass2_autochange()
-        # self.df_autochange()
-        # self.lev_autochange()
+        self.variable_names = ['tstrt', 'L', 'Lstd', 'Fpass1', 'Fpass2', 'df', 'lev']
+        i_variable = 0
+        for child in self.main.ui.shiftsScrollArea.widget().children():
+            if isinstance(child, QDoubleSpinBox):
+                self.variable_names.append(f'dT{i_variable}')
+                i_variable += 1
+        for variable_name in self.variable_names:
+            self.main.ui.__dict__[f'{variable_name}Edit'].textChanged.connect(
+                partial(self.autochange, variable_name=variable_name))
         if main.ui.unloadingRadioButton.isChecked():  # 0 - debugging, 1 - unloading
             self.mode = 'unloading'
         elif main.ui.debuggingRadioButton.isChecked():
@@ -100,9 +96,6 @@ class CalculationsRunner():
         main.ui.sensorsListView.clicked.connect(self.choose_nsen)
         # self.dT = or []
         print(self.nsen)
-        for child in self.main.ui.shiftsScrollArea.widget().children():
-            if isinstance(child, QDoubleSpinBox):
-                child.textChanged.connect(lambda: self.dT_autochange(number=child.value()))
 
     def choose_nsen(self):
         try:
@@ -113,8 +106,10 @@ class CalculationsRunner():
         self.nsen = self.main.ksen[f'{selected_index:05.0f}']
         print(self.nsen)
 
-    def autochange(self, variable_name, field):
-        self.__dict__[variable_name] = field.value()
+    def autochange(self, variable_name):
+        # I take the value from the gui widget and put it in the variable named the same
+        self.__dict__[variable_name] = self.main.ui.__dict__[f'{variable_name}Edit'].value()
+        # print(f'{variable_name} = {self.main.ui.__dict__[f"{variable_name}Edit"].value()}')
 
 class MainWindow(QMainWindow):
     """The main window of the application."""
@@ -178,10 +173,13 @@ class MainWindow(QMainWindow):
     def populate_shifts(self, layout):
         for i_sbx, sbx_file in enumerate(self.sbx_files):
             label = QLabel(layout.parent())
-            label.setObjectName(f"ShiftLabel_{i_sbx}")
+            label.setObjectName(f"dT{i_sbx}Label")
             label.setText(f"File_{i_sbx}: {os.path.basename(self.in_files.checked_list[i_sbx])}")
             edit_field = QDoubleSpinBox(layout.parent())
-            edit_field.setObjectName(f"ShiftEdit_{i_sbx}")
+            edit_field.setObjectName(f"dT{i_sbx}Edit")
+            edit_field.setValue(i_sbx)
+            self.ui.__dict__[f'dT{i_sbx}Label'] = label
+            self.ui.__dict__[f'dT{i_sbx}Edit'] = edit_field
             layout.addWidget(label, i_sbx, 0, 1, 1)
             layout.addWidget(edit_field, i_sbx, 1, 1, 1)
 
