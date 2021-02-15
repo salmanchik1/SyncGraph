@@ -124,7 +124,7 @@ class CalculationsRunner(SyncMaker):
             print('Could not get sensor number')
             return
         self.ksen = self.main.ksen[f'{selected_index:05.0f}']
-        # print(self.ksen)
+        print(self.ksen)
 
     def autochange_checkbox(self, variable_name):
         self.__dict__[variable_name] = self.main.ui.__dict__[variable_name + 'CheckBox'].isChecked()
