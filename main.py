@@ -4,7 +4,7 @@ from functools import partial
 import h5py
 from PyQt5.QtCore import QAbstractListModel, Qt, QSize, QAbstractItemModel
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox, QDoubleSpinBox, QLabel
-
+from getMeanPerf_test import SyncMaker, import_h5
 from SyncGraph import Ui_syncGraphMainWindow  # Graphical user interface
 from matplotlib import pyplot as plt
 import os
@@ -12,24 +12,6 @@ import json
 import numpy as np
 
 SET_F_NAME = 'settings.json'
-
-
-def import_h5(file_paths):
-    """Import one or plural h5 files
-    Args:
-        file_paths (list): h5 files locations
-    Return:
-        sbx_i (dict): data of files
-    """
-    sbx_i = dict()
-    for n_sbx, file_path in enumerate(file_paths):
-        with h5py.File(file_path, 'r') as f:
-            keys = list(f.keys())
-            sbx_f = f.get(keys[0])
-            sbx_i[n_sbx] = dict()
-            for key in sbx_f:
-                sbx_i[n_sbx][key] = np.array(sbx_f[key])
-    return sbx_i
 
 
 class InFilesList(QAbstractListModel):
@@ -74,47 +56,79 @@ class SensorsList(QAbstractListModel):
         return len(self.ids)
 
 
-class CalculationsRunner():
+class CalculationsRunner(SyncMaker):
     """Value synchronizes with visual component"""
-    def __init__(self, *args, main, **kwargs):
-        self.main = main
+
+    def __init__(self,  file_paths, main_window=None):
+        if main_window is None:
+            print('Main caller class not founded.')
+            return
+        else:
+            self.main = main_window
         self.populate_variables()
-        if main.ui.unloadingRadioButton.isChecked():  # 0 - debugging, 1 - unloading
-            self.mode = 'unloading'
-        elif main.ui.debuggingRadioButton.isChecked():
-            self.mode = 'debugging'
-        self.extraFUP = main.ui.extraFUPCheckBox.isChecked()
-        # nsen holds the index of each sensor data in sbx files structures
-        self.nsen = 0
-        main.ui.sensorsListView.clicked.connect(self.choose_nsen)
-        # print(self.nsen)
+        if self.main.ui.unloadingRadioButton.isChecked():  # 0 - debugging, 1 - unloading
+            mode = 'unloading'
+        elif self.main.ui.debuggingRadioButton.isChecked():
+            mode = 'debugging'
+        self.main.ui.sensorsListView.clicked.connect(self.choose_ksen)
+
+        kwargs = {
+            'file_paths': file_paths,  # a list of directories
+            'SBXi': import_h5(file_paths),  # SBXi: файлы
+            'tstrt': self.tstrt,  # tstrt: начало окна, отсчеты;
+            'L': self.L,  # L: длина окна, отсчеты;
+            'Lstd': self.Lstd,  # Lss: длина окна до взрыва для вычисления std, отсчеты;
+            'dT': self.dT,  # dT: сдвиги каждого SBX файла, отсчеты;
+            'Fpass1': self.Fpass1,  # Fpass1: начальная частота фильтрации, Гц;
+            'Fpass2': self.Fpass2,  # Fpass2: конечная частота фильтрации, Гц;
+            'mode': mode,  # mode: debugging - режим отладки; unloading - режим выгрузки;
+            'lev': self.lev,  # lev: уровень шума входящего сигнала для отбраковки
+            'ksen': 0,  # ksen: какой канал смотреть, номер (название) канала (датчика, сенсора?)
+            'extraFUP': self.main.ui.extraFUPCheckBox.isChecked(),  # применять доп.фильтрацию узкополосных помех checkbox
+            'df': self.df,  # ширина медианного фильтра доп.фильтрации узкополосных помех, Гц
+        }
+        super().__init__(**kwargs)
+        # self.make()
 
     def populate_variables(self):
         self.variables_names = ['tstrt', 'L', 'Lstd', 'Fpass1', 'Fpass2', 'df', 'lev']
         # Add shifts to variables_names list
+        # All the fields values being saved to variables by autochange function
+        for variable_name in self.variables_names:
+            # self.__dict__[variable_name] = self.main.ui.__dict__[f'{variable_name}Edit'].value()
+            self.main.ui.__dict__[f'{variable_name}Edit'].textChanged.connect(
+                partial(self.autochange, variable_name=variable_name))
+            self.autochange(variable_name=variable_name)
+
+        self.dT = []
         i_variable = 0
         for child in self.main.ui.shiftsScrollArea.widget().children():
             if isinstance(child, QDoubleSpinBox):
-                self.variables_names.append(f'dT{i_variable}')
+                self.dT.append(f'dT{i_variable}')
+                self.main.ui.__dict__[f'dT{i_variable}Edit'].textChanged.connect(
+                    partial(self.autochange_dT, index=i_variable))
+                self.autochange_dT(index=i_variable)
                 i_variable += 1
-        # All the fields values being saved to variables by autochange function
-        for variable_name in self.variables_names:
-            self.main.ui.__dict__[f'{variable_name}Edit'].textChanged.connect(
-                partial(self.autochange, variable_name=variable_name))
 
-    def choose_nsen(self):
+    def autochange_dT(self, index):
+        self.dT[index] = self.main.ui.__dict__[f'dT{index}Edit'].value()
+        print(f'dT{index} = {self.__dict__["dT"][index]}')
+
+    def autochange(self, variable_name):
+        # I take the value from the gui widget and put it in the variable named the same
+        self.__dict__[variable_name] = self.main.ui.__dict__[f'{variable_name}Edit'].value()
+        print(f'{variable_name} = {self.__dict__[f"{variable_name}"]}')
+
+    def choose_ksen(self):
         try:
             selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row()
         except Exception:
             print('Could not get sensor number')
             return
-        self.nsen = self.main.ksen[f'{selected_index:05.0f}']
-        # print(self.nsen)
+        self.ksen = self.main.ksen[f'{selected_index:05.0f}']
+        # print(self.ksen)
 
-    def autochange(self, variable_name):
-        # I take the value from the gui widget and put it in the variable named the same
-        self.__dict__[variable_name] = self.main.ui.__dict__[f'{variable_name}Edit'].value()
-        # print(f'{variable_name} = {self.main.ui.__dict__[f"{variable_name}Edit"].value()}')
+
 
 class MainWindow(QMainWindow):
     """The main window of the application."""
@@ -161,13 +175,13 @@ class MainWindow(QMainWindow):
             self.sbx_files = import_h5(self.in_files.checked_list)
         except Exception:
             print(f'Exception:{Exception}\n'
-                  "Couldn't read a file.")
+                  "File reading error or it doesn't exist.")
             return
         layout = self.ui.shiftsScrollArea.widget().layout()
         self.clear_layout(layout)
         self.populate_shifts(layout)
         self.populate_sensors()
-        self.calculations = CalculationsRunner(main=self)
+        self.calculations = CalculationsRunner(main_window=self, file_paths=self.in_files.checked_list)
 
     def clear_layout(self, layout):
         while layout.count():
@@ -200,7 +214,6 @@ class MainWindow(QMainWindow):
                 self.in_files.paths[index.row()][0] = value
             self.in_files.layoutChanged.emit()
             self.ui.inFilesListView.reset()
-
 
     def add_in_files(self):
         filenames, filetype = QFileDialog.getOpenFileNames(
@@ -254,10 +267,14 @@ class MainWindow(QMainWindow):
             json.dump(self.state_ui, f, indent=2)
 
 
-if __name__ == '__main__':
+def main():
     import sys
 
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
