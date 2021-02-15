@@ -35,9 +35,6 @@ class InFilesList(QAbstractListModel):
     def rowCount(self, index):
         return len(self.paths)
 
-    def dropEvent(self, event):
-        print(dropped)
-
 
 class SensorsList(QAbstractListModel):
     """List of sensors synchronization model"""
@@ -66,12 +63,13 @@ class CalculationsRunner(SyncMaker):
         else:
             self.main = main_window
         self.populate_variables()
-        if self.main.ui.unloadingRadioButton.isChecked():  # 0 - debugging, 1 - unloading
-            mode = 'unloading'
-        elif self.main.ui.debuggingRadioButton.isChecked():
-            mode = 'debugging'
         self.main.ui.sensorsListView.clicked.connect(self.choose_ksen)
-
+        self.extraFUP = self.main.ui.extraFUPCheckBox.isChecked()
+        self.main.ui.extraFUPCheckBox.clicked.connect(
+            partial(self.autochange_checkbox, variable_name='extraFUP'))
+        self.main.ui.debuggingRadioButton.clicked.connect(self.autochange_mode)  # 0 - debugging, 1 - unloading
+        self.main.ui.unloadingRadioButton.clicked.connect(self.autochange_mode)  # 0 - debugging, 1 - unloading
+        self.autochange_mode()
         kwargs = {
             'file_paths': file_paths,  # a list of directories
             'SBXi': import_h5(file_paths),  # SBXi: файлы
@@ -81,10 +79,10 @@ class CalculationsRunner(SyncMaker):
             'dT': self.dT,  # dT: сдвиги каждого SBX файла, отсчеты;
             'Fpass1': self.Fpass1,  # Fpass1: начальная частота фильтрации, Гц;
             'Fpass2': self.Fpass2,  # Fpass2: конечная частота фильтрации, Гц;
-            'mode': mode,  # mode: debugging - режим отладки; unloading - режим выгрузки;
+            'mode': self.mode,  # mode: debugging - режим отладки; unloading - режим выгрузки;
             'lev': self.lev,  # lev: уровень шума входящего сигнала для отбраковки
             'ksen': 0,  # ksen: какой канал смотреть, номер (название) канала (датчика, сенсора?)
-            'extraFUP': self.main.ui.extraFUPCheckBox.isChecked(),  # применять доп.фильтрацию узкополосных помех checkbox
+            'extraFUP': self.extraFUP,  # применять доп.фильтрацию узкополосных помех checkbox
             'df': self.df,  # ширина медианного фильтра доп.фильтрации узкополосных помех, Гц
         }
         super().__init__(**kwargs)
@@ -128,7 +126,16 @@ class CalculationsRunner(SyncMaker):
         self.ksen = self.main.ksen[f'{selected_index:05.0f}']
         # print(self.ksen)
 
+    def autochange_checkbox(self, variable_name):
+        self.__dict__[variable_name] = self.main.ui.__dict__[variable_name + 'CheckBox'].isChecked()
+        print(f'{variable_name} = {self.__dict__[variable_name]}')
 
+    def autochange_mode(self):
+        if self.main.ui.debuggingRadioButton.isChecked():
+            self.mode = 'debugging'
+        elif self.main.ui.unloadingRadioButton.isChecked():
+            self.mode = 'unloading'
+        print(f'mode = {self.mode}')
 
 class MainWindow(QMainWindow):
     """The main window of the application."""
@@ -187,6 +194,7 @@ class MainWindow(QMainWindow):
         self.populate_shifts(layout)
         self.populate_sensors()
         self.calculations = CalculationsRunner(main_window=self, file_paths=self.in_files.checked_list)
+        self.ui.buildButton.clicked.connect(self.calculations.make)
 
     def clear_layout(self, layout):
         if layout is None:
