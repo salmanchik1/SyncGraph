@@ -243,7 +243,7 @@ class MainWindow(QMainWindow):
 
     def delete_in_files(self):
         if QMessageBox.question(
-                self, 'Question', 'Are you sure you want to delete checked items from the list?',
+                self, 'Question', 'Are you sure want to delete checked items from the list?',
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         ) == QMessageBox.No:
             return

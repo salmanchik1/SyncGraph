@@ -61,7 +61,7 @@ class SyncMaker(object):
         for key in self.SBXi:
             self.SBX_plot[key] = dict()
             for XYZ in ['Z', 'X', 'Y']:
-                signal = getSBXsen(self.SBXi[key], 'S'+XYZ, self.ksen)
+                signal = getSBXsen(self.SBXi[key], 'S'+XYZ, self.ksen[key])
                 if self.extraFUP:
                     ldf = int(self.LenOfSignal * self.df / self.fd)
                     n_fup = ldf if ldf else ldf - 1
@@ -203,7 +203,7 @@ def main():
         'Fpass2': 35,  # Fpass2: конечная частота фильтрации, Гц;
         'mode': 'debugging',  # mode: debugging - режим отладки; unloading - режим выгрузки;
         'lev': 0.15,  # lev: уровень шума входящего сигнала для отбраковки
-        'ksen': 91,  # nsen: какой канал смотреть, номер (название) канала (датчика, сенсора?)
+        'ksen': [91, 91],  # ksen: какой канал смотреть, номер (название) канала (датчика, сенсора?)
         'extraFUP': True,  # применять доп.фильтрацию узкополосных помех checkbox
         'df': 5,  # ширина медианного фильтра доп.фильтрации узкополосных помех, Гц
     }
