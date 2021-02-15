@@ -460,19 +460,8 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
-         <widget class="QWidget" name="contentGraphics" native="true">
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QFrame" name="graphFrame">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
+         <widget class="QWidget" name="graphsContainer" native="true">
+          <layout class="QVBoxLayout" name="verticalLayout_4"/>
          </widget>
         </item>
        </layout>
