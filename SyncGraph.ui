@@ -38,22 +38,6 @@
       <widget class="QWidget" name="mainOptionsBarPage1">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QListView" name="inFilesListView">
-          <property name="toolTipDuration">
-           <number>0</number>
-          </property>
-          <property name="editTriggers">
-           <set>QAbstractItemView::CurrentChanged|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectItems</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="inFilesToolButtonsLayout">
           <item>
            <widget class="QToolButton" name="addInFileButton">
@@ -68,6 +52,11 @@
               <width>0</width>
               <height>30</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>16</pointsize>
+             </font>
             </property>
             <property name="text">
              <string>+</string>
@@ -88,12 +77,33 @@
               <height>30</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>16</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>-</string>
             </property>
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QListView" name="inFilesListView">
+          <property name="toolTipDuration">
+           <number>0</number>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::CurrentChanged|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectItems</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="loadButton">
@@ -137,7 +147,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>274</width>
-                <height>104</height>
+                <height>91</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="gridLayout_7"/>
@@ -346,37 +356,59 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="modeGroupBox">
-          <property name="title">
-           <string>Mode (compiling mode)</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item>
-            <widget class="QRadioButton" name="debuggingRadioButton">
-             <property name="text">
-              <string>debugging</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="unloadingRadioButton">
-             <property name="text">
-              <string>unloading</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QGroupBox" name="modeGroupBox">
+            <property name="title">
+             <string>Mode (compiling mode)</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <item>
+              <widget class="QRadioButton" name="debuggingRadioButton">
+               <property name="text">
+                <string>debugging</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="unloadingRadioButton">
+               <property name="text">
+                <string>unloading</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="buildButton">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>75</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>16</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Build</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QPushButton" name="exportButton">
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>30</height>
+            <height>40</height>
            </size>
           </property>
           <property name="text">
