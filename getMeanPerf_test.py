@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 from itertools import cycle
 from get_set_SBXsen import getSBXsen, setSBXsen
 
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib import rc
+
 
 def import_h5(file_paths):
     sbx_i = dict()
@@ -23,6 +26,26 @@ def import_h5(file_paths):
             for key in sbx_f:
                 sbx_i[n_sbx][key] = np.array(sbx_f[key])
     return sbx_i
+
+
+class Canvas(FigureCanvas):
+    def __init__(self, parent):
+        fig, self.ax = plt.subplots(figsize=(5, 4), dpi=200)
+        super().__init__(fig)
+        self.setParent(parent)
+
+        """ Matplotlib Script """
+        t = np.arange(0.0, 2.0, 0.01)
+        s = 1 + np.sin(2 * np.pi * t)
+
+        self.ax.plot(t, s)
+
+        self.ax.set(
+            xlabel='time (s)',
+            ylabel='voltage (mV)',
+            title='Best plot for people',
+        )
+        self.ax.grid()
 
 
 class SyncMaker(object):
@@ -48,10 +71,10 @@ class SyncMaker(object):
         self.acor = 1  # неизвестная константа?
         self.NumCh = len(self.NamesOfSen)
 
-    def make(self):
+    def make(self, widget=None):
         if self.mode == 'debugging':
             self.debugging()
-            self.build_plots()
+            self.build_plots(widget)
         else:
             SBXm = self.unloading()
             # save_output(SBXi, SBXm)
@@ -73,7 +96,7 @@ class SyncMaker(object):
                 # SBX_plot[key]['F' + XYZ] = lfilter(b, 1, signal)[:, int((len(b) - 1)/2):]
                 self.SBX_plot[key]['F' + XYZ] = filtfilt(self.b, 1, signal)
 
-    def build_plots(self):
+    def build_plots(self, widget=None):
         # for key in self.SBXi:
         #     for FZXY in ['FZ', 'FX', 'FY']:
         #         fig, ax = plt.subplots()
@@ -86,17 +109,24 @@ class SyncMaker(object):
         #         ax.grid()
         #         ax.legend(loc='upper right', ncol=2)
         #         plt.show()
-    
-        for FZXY in ['FZ', 'FX', 'FY']:
-            fig, ax = plt.subplots()
-            for key in self.SBXi:
-                ax.plot(
-                    self.SBX_plot[key][FZXY][self.T1[key, :]] * self.k[key], 
-                    label=self.file_paths[key], lw=0.8)
-            plt.title(FZXY)
-            ax.grid()
-            ax.legend(loc='upper right', ncol=2)
-            plt.show()
+        if widget is None:
+            for FZXY in ['FZ', 'FX', 'FY']:
+                fig, ax = plt.subplots()
+                for key in self.SBXi:
+                    ax.plot(
+                        self.SBX_plot[key][FZXY][self.T1[key, :]] * self.k[key],
+                        label=os.path.basename(self.file_paths[key]), lw=0.8)
+                plt.title(FZXY)
+                ax.grid()
+                ax.legend(loc='upper right', ncol=2)
+                plt.show()
+        else:
+            # setup font size for chart
+            font = {'family': 'Courier New', 'weight': 'bold', 'size': 4.5}
+            rc('font', **font)
+            self.main.ui.chart = Canvas(parent=widget)
+            self.main.ui.chart.setObjectName('chart')
+            widget.layout().addWidget(self.main.ui.chart)
     
     def unloading(self):
         for key in self.SBXi:

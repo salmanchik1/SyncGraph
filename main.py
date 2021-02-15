@@ -14,6 +14,7 @@ import numpy as np
 SET_F_NAME = 'settings.json'
 
 
+
 class InFilesList(QAbstractListModel):
     """Inner files list synchronization model"""
 
@@ -194,7 +195,7 @@ class MainWindow(QMainWindow):
         self.populate_shifts(layout)
         self.populate_sensors()
         self.calculations = CalculationsRunner(main_window=self, file_paths=self.in_files.checked_list)
-        self.ui.buildButton.clicked.connect(self.calculations.make)
+        self.ui.buildButton.clicked.connect(partial(self.calculations.make, widget=self.ui.graphsContainer))
 
     def clear_layout(self, layout):
         if layout is None:
