@@ -60,7 +60,7 @@ class CalculationsRunner(SyncMaker):
     """Value synchronizes with visual component"""
 
     def __init__(self,  file_paths, main_window=None):
-        if main_window is None:
+        if main_window is None or not file_paths:
             print('Main caller class not founded.')
             return
         else:
@@ -168,6 +168,11 @@ class MainWindow(QMainWindow):
 
             self.sensors = SensorsList(ids=sorted(self.ksen))
             self.ui.sensorsListView.setModel(self.sensors)
+        else:
+            if self.sensors is not None:
+                # clear out all the sensors data
+                self.sensors = SensorsList(ids=[])
+                self.ui.sensorsListView.setModel(self.sensors)
 
     def load_h5_files(self):
         self.in_files.checked_list = [x[1] for x in self.in_files.paths if x[0]]
@@ -184,6 +189,8 @@ class MainWindow(QMainWindow):
         self.calculations = CalculationsRunner(main_window=self, file_paths=self.in_files.checked_list)
 
     def clear_layout(self, layout):
+        if layout is None:
+            return
         while layout.count():
             child = layout.takeAt(0)
             if child.widget():
