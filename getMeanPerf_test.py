@@ -29,21 +29,18 @@ def import_h5(file_paths):
 
 
 class Canvas(FigureCanvas):
-    def __init__(self, parent):
+    def __init__(self, parent, **kwargs):
+        self.__dict__.update(kwargs)
         fig, self.ax = plt.subplots(figsize=(5, 4), dpi=200)
         super().__init__(fig)
         self.setParent(parent)
-
-        """ Matplotlib Script """
-        t = np.arange(0.0, 2.0, 0.01)
-        s = 1 + np.sin(2 * np.pi * t)
-
-        self.ax.plot(t, s)
+        for i in range(len(self.funvalues)):
+            self.ax.plot(self.funvalues[i], label=self.labels[i], lw=self.lw)
 
         self.ax.set(
-            xlabel='time (s)',
-            ylabel='voltage (mV)',
-            title='Best plot for people',
+            xlabel=self.xlabel,
+            ylabel=self.ylabel,
+            title=self.title,
         )
         self.ax.grid()
 
@@ -124,9 +121,24 @@ class SyncMaker(object):
             # setup font size for chart
             font = {'family': 'Courier New', 'weight': 'bold', 'size': 4.5}
             rc('font', **font)
-            self.main.ui.chart = Canvas(parent=widget)
-            self.main.ui.chart.setObjectName('chart')
-            widget.layout().addWidget(self.main.ui.chart)
+            for chart_title in ['FZ', 'FX', 'FY']:
+                labels = []
+                funvalues = []
+                for key in self.SBXi:
+                    labels.append(os.path.basename(self.file_paths[key]))
+                    funvalues.append(self.SBX_plot[key][chart_title][self.T1[key, :]] * self.k[key])
+                kwargs = {
+                    'xlabel': 'unknown',
+                    'ylabel': 'unknown',
+                    'title': chart_title,
+                    'labels': labels,
+                    'funvalues': funvalues,
+                    'lw': 0.8,
+                }
+                chart = Canvas(parent=widget, **kwargs)
+                self.main.ui.__dict__[f'{chart_title}chart'] = chart
+                chart.setObjectName(f'{chart_title}chart')
+                widget.layout().addWidget(chart)
     
     def unloading(self):
         for key in self.SBXi:
