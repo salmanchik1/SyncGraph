@@ -32,21 +32,20 @@ def import_h5(file_paths):
 class Canvas(FigureCanvas):
     def __init__(self, parent, **kwargs):
         self.__dict__.update(kwargs)
-
-        fig, self.ax = plt.subplots(figsize=(5, 4), dpi=200)
-        super().__init__(fig)
+        self.fig, self.axs = plt.subplots(nrows=3, ncols=1, figsize=(5, 4), dpi=200, clear=True)
+        super(Canvas, self).__init__(self.fig)
         self.setParent(parent)
-        self.val_count = len(self.funvalues)
-        for i in range(self.val_count):
-            self.ax.plot(self.funvalues[i], label=self.labels[i], lw=self.lw)
-
-        self.ax.set(
-            xlabel=self.xlabel,
-            ylabel=self.ylabel,
-            title=self.title,
-        )
-        self.ax.legend(loc='upper right', ncol=self.val_count)
-        self.ax.grid()
+        for i_xyz, xyz in enumerate(self.titles):
+            self.val_count = len(self.funvalues[xyz])
+            for i in range(self.val_count):
+                self.axs[i_xyz].plot(self.funvalues[xyz][i], label=self.labels[xyz][i], lw=self.lw)
+            self.axs[i_xyz].set(
+                xlabel=self.xlabel,
+                ylabel=self.ylabel,
+                title=self.titles[i_xyz],
+            )
+            self.axs[i_xyz].legend(loc='upper right', ncol=self.val_count)
+            self.axs[i_xyz].grid()
         # plt.show()
 
 
@@ -74,6 +73,7 @@ class SyncMaker(object):
         self.NumCh = len(self.NamesOfSen)
 
     def make(self, widget=None):
+        self.main.clear_layout(widget.layout())
         if self.mode == 'debugging':
             self.debugging()
             self.build_plots(widget)
@@ -126,27 +126,30 @@ class SyncMaker(object):
             # setup font size for chart
             font = {'family': 'Courier New', 'weight': 'bold', 'size': 4.5}
             rc('font', **font)
-            for chart_title in ['FZ', 'FX', 'FY']:
-                labels = []
-                funvalues = []
+            labels = {}
+            funvalues = {}
+            titles = ['FZ', 'FX', 'FY']
+            for chart_title in titles:
+                labels[chart_title] = []
+                funvalues[chart_title] = []
                 for key in self.SBXi:
-                    labels.append(os.path.basename(self.file_paths[key]))
-                    funvalues.append(self.SBX_plot[key][chart_title][self.T1[key, :]] * self.k[key])
-                kwargs = {
-                    'xlabel': 'unknown',
-                    'ylabel': 'unknown',
-                    'title': chart_title,
-                    'labels': labels,
-                    'funvalues': funvalues,
-                    'lw': 0.8,
-                }
-                chart = Canvas(parent=widget, **kwargs)
-                self.main.ui.__dict__[f'{chart_title}chart'] = chart
-                chart.setObjectName(f'{chart_title}chart')
-                toolbar = NavigationToolbar(chart, widget)
-                widget.layout().addWidget(chart)
-                widget.layout().addWidget(toolbar)
-    
+                    labels[chart_title].append(os.path.basename(self.file_paths[key]))
+                    funvalues[chart_title].append(self.SBX_plot[key][chart_title][self.T1[key, :]] * self.k[key])
+            kwargs = {
+                'xlabel': 'time',
+                'ylabel': 'frequency',
+                'labels': labels,
+                'funvalues': funvalues,
+                'lw': 0.8,
+                'titles': titles,
+            }
+            self.main.ui.__dict__[f'{chart_title}chart'] = Canvas(parent=widget, **kwargs)
+            self.main.ui.__dict__[f'{chart_title}chart'].setObjectName(f'{chart_title}chart')
+            self.main.ui.__dict__[f'{chart_title}toolbar'] = NavigationToolbar(self.main.ui.__dict__[f'{chart_title}chart'], widget)
+            self.main.ui.__dict__[f'{chart_title}toolbar'].setObjectName(f'{chart_title}toolbar')
+            widget.layout().addWidget(self.main.ui.__dict__[f'{chart_title}toolbar'])
+            widget.layout().addWidget(self.main.ui.__dict__[f'{chart_title}chart'])
+
     def unloading(self):
         for key in self.SBXi:
             for XYZ in ['Z', 'X', 'Y']:

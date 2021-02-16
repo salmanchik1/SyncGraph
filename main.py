@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 from functools import partial
 
 import h5py
@@ -71,6 +72,8 @@ class CalculationsRunner(SyncMaker):
         self.main.ui.debuggingRadioButton.clicked.connect(self.autochange_mode)  # 0 - debugging, 1 - unloading
         self.main.ui.unloadingRadioButton.clicked.connect(self.autochange_mode)  # 0 - debugging, 1 - unloading
         self.autochange_mode()
+        self.choose_ksen()
+        # self.ksen = [0 for i in file_paths]
         kwargs = {
             'file_paths': file_paths,  # a list of directories
             'SBXi': import_h5(file_paths),  # SBXi: файлы
@@ -82,11 +85,12 @@ class CalculationsRunner(SyncMaker):
             'Fpass2': self.Fpass2,  # Fpass2: конечная частота фильтрации, Гц;
             'mode': self.mode,  # mode: debugging - режим отладки; unloading - режим выгрузки;
             'lev': self.lev,  # lev: уровень шума входящего сигнала для отбраковки
-            'ksen': 0,  # ksen: какой канал смотреть, номер (название) канала (датчика, сенсора?)
+            'ksen': self.ksen,  # ksen: какой канал смотреть, номер (название) канала (датчика, сенсора?)
             'extraFUP': self.extraFUP,  # применять доп.фильтрацию узкополосных помех checkbox
             'df': self.df,  # ширина медианного фильтра доп.фильтрации узкополосных помех, Гц
         }
         super().__init__(**kwargs)
+        self.main.ui.buildButton.clicked.connect(partial(self.make, widget=self.main.ui.graphsContainer))
         # self.make()
 
     def populate_variables(self):
@@ -122,9 +126,8 @@ class CalculationsRunner(SyncMaker):
         try:
             selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row()
         except Exception:
-            print('Could not get sensor number')
-            return
-        self.ksen = self.main.ksen[f'{selected_index:05.0f}']
+            selected_index = 1
+        self.ksen = self.main.ksen[f'{selected_index+1:05.0f}']
         print(self.ksen)
 
     def autochange_checkbox(self, variable_name):
@@ -153,8 +156,8 @@ class MainWindow(QMainWindow):
         self.sensors = None  # Will load sensors names in this variable
         self.ui.inFilesListView.setModel(self.in_files)
         # Buttons and other objects methods
-        self.ui.loadButton.clicked.connect(self.load_h5_files)
         self.ui.addInFileButton.clicked.connect(self.add_in_files)
+        self.ui.loadButton.clicked.connect(self.load_h5_files)
         self.ui.removeInFileButton.clicked.connect(self.delete_in_files)
         self.ui.inFilesListView.mouseReleaseEvent = lambda x: self.change_in_files_status(x)
         # Import Window state from settings file
@@ -195,7 +198,6 @@ class MainWindow(QMainWindow):
         self.populate_shifts(layout)
         self.populate_sensors()
         self.calculations = CalculationsRunner(main_window=self, file_paths=self.in_files.checked_list)
-        self.ui.buildButton.clicked.connect(partial(self.calculations.make, widget=self.ui.graphsContainer))
 
     def clear_layout(self, layout):
         if layout is None:
