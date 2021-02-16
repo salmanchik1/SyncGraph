@@ -32,7 +32,12 @@ def import_h5(file_paths):
 class Canvas(FigureCanvas):
     def __init__(self, parent, **kwargs):
         self.__dict__.update(kwargs)
-        self.fig, self.axs = plt.subplots(nrows=3, ncols=1, figsize=(5, 4), dpi=200, clear=True)
+        self.fig, self.axs = plt.subplots(
+            nrows=3, ncols=1,  # rows and cols count
+            figsize=(1, 1), dpi=150, clear=True,  # dpi - whole mpl graphics scaling
+            sharex='all', sharey='all',  # All the plots have same parameters and scale together
+            gridspec_kw={'hspace': 0},  # Space between plots
+        )
         super(Canvas, self).__init__(self.fig)
         self.setParent(parent)
         for i_xyz, xyz in enumerate(self.titles):
@@ -44,8 +49,10 @@ class Canvas(FigureCanvas):
                 ylabel=self.ylabel,
                 title=self.titles[i_xyz],
             )
-            self.axs[i_xyz].legend(loc='upper right', ncol=self.val_count)
             self.axs[i_xyz].grid()
+            # Hide x labels and tick labels for all but bottom plot.
+            self.axs[i_xyz].label_outer()
+        self.axs[0].legend(loc='upper right', ncol=self.val_count)
         # plt.show()
 
 
