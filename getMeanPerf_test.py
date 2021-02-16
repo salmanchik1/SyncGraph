@@ -4,6 +4,9 @@ import os
 
 import numpy as np
 import h5py
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QGuiApplication
+
 from filter_f import filter_f
 from scipy.signal import medfilt2d
 from scipy.signal import filtfilt
@@ -88,16 +91,22 @@ class Canvas(FigureCanvas):
                 scale_factor = 1
                 print(event.button)
             # set new limits
-            ax.set_xlim([xdata - (xdata - cur_xlim[0])*scale_factor,
-                         xdata + (cur_xlim[1] - xdata)*scale_factor])
-            ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
-                         ydata + (cur_ylim[1] - ydata)*scale_factor])
+            modifiers = QGuiApplication.keyboardModifiers()
+            # If Control Button pressed while scrolling
+            if not (modifiers & Qt.ControlModifier):
+                ax.set_xlim([xdata - (xdata - cur_xlim[0])*scale_factor,
+                             xdata + (cur_xlim[1] - xdata)*scale_factor])
+            # If Shift Button pressed while scrolling
+            if not (modifiers & Qt.ShiftModifier):
+                ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
+                             ydata + (cur_ylim[1] - ydata)*scale_factor])
             ax.get_figure().canvas.draw_idle()  # force re-draw
         fig = ax.get_figure()  # get the figure of interest
         # attach the call back
         fig.canvas.mpl_connect('scroll_event', zoom_fun)
         #return the function
         return zoom_fun
+
 
 class SyncMaker(object):
     def __init__(self, **kwargs):
@@ -193,6 +202,8 @@ class SyncMaker(object):
             toolbar = NavigationToolbar(self.main.ui.__dict__[f'{chart_title}chart'], widget)
             self.main.ui.__dict__[f'{chart_title}toolbar'] = toolbar
             toolbar.setObjectName(f'{chart_title}toolbar')
+            # Turn on pan/zoom mode from start
+            toolbar.pan()
             widget.layout().addWidget(toolbar)
             widget.layout().addWidget(chart)
 
