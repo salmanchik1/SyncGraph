@@ -128,6 +128,7 @@ class CalculationsRunner(SyncMaker):
         except Exception:
             selected_index = 1
         self.ksen = self.main.ksen[f'{selected_index+1:05.0f}']
+        # self.make(widget=self.main.ui.graphsContainer)
         print(self.ksen)
 
     def autochange_checkbox(self, variable_name):
@@ -214,7 +215,9 @@ class MainWindow(QMainWindow):
             label.setText(f"File_{i_sbx}: {os.path.basename(self.in_files.checked_list[i_sbx])}")
             edit_field = QDoubleSpinBox(layout.parent())
             edit_field.setObjectName(f"dT{i_sbx}Edit")
-            edit_field.setValue(i_sbx)
+            edit_field.setMinimum(-65000)
+            edit_field.setMaximum(65000)
+            edit_field.setValue(i_sbx*100)
             self.ui.__dict__[f'dT{i_sbx}Label'] = label
             self.ui.__dict__[f'dT{i_sbx}Edit'] = edit_field
             layout.addWidget(label, i_sbx, 0, 1, 1)
