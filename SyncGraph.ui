@@ -46,7 +46,7 @@
            <item row="0" column="0">
             <widget class="QWidget" name="graphsContainer" native="true">
              <property name="styleSheet">
-              <string notr="true">background-color: rgb(242, 242, 242);</string>
+              <string notr="true"/>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4"/>
             </widget>

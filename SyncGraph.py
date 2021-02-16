@@ -33,7 +33,7 @@ class Ui_syncGraphMainWindow(object):
         self.gridLayout = QtWidgets.QGridLayout(self.graphTabPage)
         self.gridLayout.setObjectName("gridLayout")
         self.graphsContainer = QtWidgets.QWidget(self.graphTabPage)
-        self.graphsContainer.setStyleSheet("background-color: rgb(242, 242, 242);")
+        self.graphsContainer.setStyleSheet("")
         self.graphsContainer.setObjectName("graphsContainer")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.graphsContainer)
         self.verticalLayout_4.setObjectName("verticalLayout_4")

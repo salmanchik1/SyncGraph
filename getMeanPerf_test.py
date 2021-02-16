@@ -12,6 +12,7 @@ from itertools import cycle
 from get_set_SBXsen import getSBXsen, setSBXsen
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib import rc
 
 
@@ -31,10 +32,12 @@ def import_h5(file_paths):
 class Canvas(FigureCanvas):
     def __init__(self, parent, **kwargs):
         self.__dict__.update(kwargs)
+
         fig, self.ax = plt.subplots(figsize=(5, 4), dpi=200)
         super().__init__(fig)
         self.setParent(parent)
-        for i in range(len(self.funvalues)):
+        self.val_count = len(self.funvalues)
+        for i in range(self.val_count):
             self.ax.plot(self.funvalues[i], label=self.labels[i], lw=self.lw)
 
         self.ax.set(
@@ -42,7 +45,9 @@ class Canvas(FigureCanvas):
             ylabel=self.ylabel,
             title=self.title,
         )
+        self.ax.legend(loc='upper right', ncol=self.val_count)
         self.ax.grid()
+        # plt.show()
 
 
 class SyncMaker(object):
@@ -138,7 +143,9 @@ class SyncMaker(object):
                 chart = Canvas(parent=widget, **kwargs)
                 self.main.ui.__dict__[f'{chart_title}chart'] = chart
                 chart.setObjectName(f'{chart_title}chart')
+                toolbar = NavigationToolbar(chart, widget)
                 widget.layout().addWidget(chart)
+                widget.layout().addWidget(toolbar)
     
     def unloading(self):
         for key in self.SBXi:
