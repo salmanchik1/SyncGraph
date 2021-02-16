@@ -15,12 +15,11 @@ import numpy as np
 SET_F_NAME = 'settings.json'
 
 
-
-class InFilesList(QAbstractListModel):
+class InFilesModel(QAbstractListModel):
     """Inner files list synchronization model"""
 
     def __init__(self, *args, paths=None, **kwargs):
-        super(InFilesList, self).__init__(*args, **kwargs)
+        super(InFilesModel, self).__init__(*args, **kwargs)
         self.paths = paths or []
 
     def data(self, index, role):
@@ -38,11 +37,11 @@ class InFilesList(QAbstractListModel):
         return len(self.paths)
 
 
-class SensorsList(QAbstractListModel):
+class SensorsModel(QAbstractListModel):
     """List of sensors synchronization model"""
 
     def __init__(self, *args, ids=None, **kwargs):
-        super(SensorsList, self).__init__(*args, **kwargs)
+        super(SensorsModel, self).__init__(*args, **kwargs)
         self.ids = ids or []
 
     def data(self, index, role):
@@ -55,7 +54,7 @@ class SensorsList(QAbstractListModel):
         return len(self.ids)
 
 
-class CalculationsRunner(SyncMaker):
+class SyncMakerGraph(SyncMaker):
     """Value synchronizes with visual component"""
 
     def __init__(self,  file_paths, main_window=None):
@@ -64,15 +63,17 @@ class CalculationsRunner(SyncMaker):
             return
         else:
             self.main = main_window
-        self.populate_variables()
-        self.main.ui.sensorsListView.clicked.connect(self.choose_ksen)
+        var_names = ['tstrt', 'L', 'Lstd', 'Fpass1', 'Fpass2', 'df', 'lev']
+        self.sync_vars(var_names)
+        self.sync_dTs()
+        self.main.ui.sensorsListView.clicked.connect(self.on_select_ksen)
         self.extraFUP = self.main.ui.extraFUPCheckBox.isChecked()
         self.main.ui.extraFUPCheckBox.clicked.connect(
-            partial(self.autochange_checkbox, variable_name='extraFUP'))
-        self.main.ui.debuggingRadioButton.clicked.connect(self.autochange_mode)  # 0 - debugging, 1 - unloading
-        self.main.ui.unloadingRadioButton.clicked.connect(self.autochange_mode)  # 0 - debugging, 1 - unloading
-        self.autochange_mode()
-        self.choose_ksen()
+            partial(self.on_click_checkbox, variable_name='extraFUP'))
+        self.main.ui.debuggingRadioButton.clicked.connect(self.on_click_mode)  # 0 - debugging, 1 - unloading
+        self.main.ui.unloadingRadioButton.clicked.connect(self.on_click_mode)  # 0 - debugging, 1 - unloading
+        self.on_click_mode()
+        self.on_select_ksen()
         # self.ksen = [0 for i in file_paths]
         kwargs = {
             'file_paths': file_paths,  # a list of directories
@@ -93,36 +94,36 @@ class CalculationsRunner(SyncMaker):
         self.main.ui.buildButton.clicked.connect(partial(self.make, widget=self.main.ui.graphsContainer))
         # self.make()
 
-    def populate_variables(self):
-        self.variables_names = ['tstrt', 'L', 'Lstd', 'Fpass1', 'Fpass2', 'df', 'lev']
-        # Add shifts to variables_names list
+    def sync_vars(self, vars):
+        """Synchronizes variables"""
         # All the fields values being saved to variables by autochange function
-        for variable_name in self.variables_names:
-            # self.__dict__[variable_name] = self.main.ui.__dict__[f'{variable_name}Edit'].value()
-            self.main.ui.__dict__[f'{variable_name}Edit'].textChanged.connect(
-                partial(self.autochange, variable_name=variable_name))
-            self.autochange(variable_name=variable_name)
+        for var in vars:
+            # self.__dict__[var] = self.main.ui.__dict__[f'{var}Edit'].value()
+            self.main.ui.__dict__[f'{var}Edit'].textChanged.connect(
+                partial(self.on_change_edit, variable_name=var))
+            self.on_change_edit(variable_name=var)
 
+    def sync_dTs(self):
         self.dT = []
         i_variable = 0
         for child in self.main.ui.shiftsScrollArea.widget().children():
             if isinstance(child, QDoubleSpinBox):
                 self.dT.append(f'dT{i_variable}')
                 self.main.ui.__dict__[f'dT{i_variable}Edit'].textChanged.connect(
-                    partial(self.autochange_dT, index=i_variable))
-                self.autochange_dT(index=i_variable)
+                    partial(self.on_click_dT, index=i_variable))
+                self.on_click_dT(index=i_variable)
                 i_variable += 1
 
-    def autochange_dT(self, index):
+    def on_click_dT(self, index):
         self.dT[index] = self.main.ui.__dict__[f'dT{index}Edit'].value()
         print(f'dT{index} = {self.__dict__["dT"][index]}')
 
-    def autochange(self, variable_name):
+    def on_change_edit(self, variable_name):
         # I take the value from the gui widget and put it in the variable named the same
         self.__dict__[variable_name] = self.main.ui.__dict__[f'{variable_name}Edit'].value()
         print(f'{variable_name} = {self.__dict__[f"{variable_name}"]}')
 
-    def choose_ksen(self):
+    def on_select_ksen(self):
         try:
             selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row()
         except Exception:
@@ -131,16 +132,17 @@ class CalculationsRunner(SyncMaker):
         # self.make(widget=self.main.ui.graphsContainer)
         print(self.ksen)
 
-    def autochange_checkbox(self, variable_name):
+    def on_click_checkbox(self, variable_name):
         self.__dict__[variable_name] = self.main.ui.__dict__[variable_name + 'CheckBox'].isChecked()
         print(f'{variable_name} = {self.__dict__[variable_name]}')
 
-    def autochange_mode(self):
+    def on_click_mode(self):
         if self.main.ui.debuggingRadioButton.isChecked():
             self.mode = 'debugging'
         elif self.main.ui.unloadingRadioButton.isChecked():
             self.mode = 'unloading'
         print(f'mode = {self.mode}')
+
 
 class MainWindow(QMainWindow):
     """The main window of the application."""
@@ -152,20 +154,34 @@ class MainWindow(QMainWindow):
         self.ui = Ui_syncGraphMainWindow()
         self.ui.setupUi(self)
         # Create in_files model and connect it to listview
-        self.in_files = InFilesList()
+        self.in_files = InFilesModel()
         self.sbx_files = None  # Will load h5 files in this variable
         self.sensors = None  # Will load sensors names in this variable
         self.ui.inFilesListView.setModel(self.in_files)
         # Buttons and other objects methods
         self.ui.addInFileButton.clicked.connect(self.add_in_files)
-        self.ui.loadButton.clicked.connect(self.load_h5_files)
+        self.ui.loadButton.clicked.connect(self.on_click_load)
         self.ui.removeInFileButton.clicked.connect(self.delete_in_files)
-        self.ui.inFilesListView.mouseReleaseEvent = lambda x: self.change_in_files_status(x)
+        self.ui.inFilesListView.mouseReleaseEvent = lambda x: self.on_select_in_files(x)
         # Import Window state from settings file
         self.import_state()
-        self.calculations = None
+        self.sync_maker = None
 
-    def populate_sensors(self):
+    def on_click_load(self):
+        self.in_files.checked_list = [x[1] for x in self.in_files.paths if x[0]]
+        try:
+            self.sbx_files = import_h5(self.in_files.checked_list)
+        except Exception:
+            print(f'Exception:{Exception}\n'
+                  "File reading error or it doesn't exist.")
+            return
+        layout = self.ui.shiftsScrollArea.widget().layout()
+        self.clear_layout(layout)
+        self.fill_shifts(layout)
+        self.fill_sensors()
+        self.sync_maker = SyncMakerGraph(main_window=self, file_paths=self.in_files.checked_list)
+
+    def fill_sensors(self):
         if len(self.sbx_files) > 0:
             self.ksen = dict()
             for file_id, sbx_file in enumerate(self.sbx_files.items()):
@@ -178,27 +194,13 @@ class MainWindow(QMainWindow):
                     if len(i) < file_id + 1:
                         i.append(None)
 
-            self.sensors = SensorsList(ids=sorted(self.ksen))
+            self.sensors = SensorsModel(ids=sorted(self.ksen))
             self.ui.sensorsListView.setModel(self.sensors)
         else:
             if self.sensors is not None:
                 # clear out all the sensors data
-                self.sensors = SensorsList(ids=[])
+                self.sensors = SensorsModel(ids=[])
                 self.ui.sensorsListView.setModel(self.sensors)
-
-    def load_h5_files(self):
-        self.in_files.checked_list = [x[1] for x in self.in_files.paths if x[0]]
-        try:
-            self.sbx_files = import_h5(self.in_files.checked_list)
-        except Exception:
-            print(f'Exception:{Exception}\n'
-                  "File reading error or it doesn't exist.")
-            return
-        layout = self.ui.shiftsScrollArea.widget().layout()
-        self.clear_layout(layout)
-        self.populate_shifts(layout)
-        self.populate_sensors()
-        self.calculations = CalculationsRunner(main_window=self, file_paths=self.in_files.checked_list)
 
     def clear_layout(self, layout):
         if layout is None:
@@ -208,7 +210,7 @@ class MainWindow(QMainWindow):
             if child.widget():
                 child.widget().deleteLater()
 
-    def populate_shifts(self, layout):
+    def fill_shifts(self, layout):
         for i_sbx, sbx_file in enumerate(self.sbx_files):
             label = QLabel(layout.parent())
             label.setObjectName(f"dT{i_sbx}Label")
@@ -223,7 +225,7 @@ class MainWindow(QMainWindow):
             layout.addWidget(label, i_sbx, 0, 1, 1)
             layout.addWidget(edit_field, i_sbx, 1, 1, 1)
 
-    def change_in_files_status(self, e=None):
+    def on_select_in_files(self, e=None):
         indexes = self.ui.inFilesListView.selectedIndexes()
         if indexes:
             value = False
@@ -264,11 +266,6 @@ class MainWindow(QMainWindow):
             # Clear the selection (as it is no longer valid).
             self.ui.inFilesListView.clearSelection()
 
-    def closeEvent(self, event):
-        """Raises on main window closing"""
-        self.export_state()
-        event.accept()
-
     def refresh_in_files_ui(self):
         for i in self.state_ui['in_files']:
             self.ui.inFilesListView.append()
@@ -286,6 +283,11 @@ class MainWindow(QMainWindow):
         self.state_ui['paths'] = self.in_files.paths
         with open(SET_F_NAME, mode='w', encoding='utf-8') as f:
             json.dump(self.state_ui, f, indent=2)
+
+    def closeEvent(self, event):
+        """Raises on main window closing"""
+        self.export_state()
+        event.accept()
 
 
 def main():

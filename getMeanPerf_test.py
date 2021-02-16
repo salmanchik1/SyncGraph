@@ -63,7 +63,7 @@ class Canvas(FigureCanvas):
             self.axs[i_xyz].grid()
             # Hide x labels and tick labels for all but bottom plot.
             self.axs[i_xyz].label_outer()
-        self.axs[0].legend(loc='upper right', ncol=self.val_count)
+        self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
         self.f = self.zoom_factory(self.axs[0], base_scale=1.5)
         # plt.show()
 
@@ -110,6 +110,16 @@ class Canvas(FigureCanvas):
 
 class SyncMaker(object):
     def __init__(self, **kwargs):
+        self.SBXi = {}
+        self.file_paths = []
+        self.Fpass1 = None
+        self.Fpass2 = None
+        self.L = None
+        self.Lstd = None
+        self.mode = None
+        self.extraFUP = None
+        self.ksen = None
+        self.df = None
         self.__dict__.update(kwargs)
         self.nSBX = len(self.SBXi)
         key = list(self.SBXi.keys())[0]
@@ -135,13 +145,13 @@ class SyncMaker(object):
         if widget is not None:
             self.main.clear_layout(widget.layout())
         if self.mode == 'debugging':
-            self.debugging()
+            self.get_plots()
             self.build_plots(widget)
         else:
-            SBXm = self.unloading()
+            SBXm = self.unload()
             # save_output(SBXi, SBXm)
 
-    def debugging(self):
+    def get_plots(self):
         self.SBX_plot = dict()
         for key in self.SBXi:
             self.SBX_plot[key] = dict()
@@ -178,36 +188,37 @@ class SyncMaker(object):
         labels = {}
         funvalues = {}
         titles = ['FZ', 'FX', 'FY']
-        for chart_title in titles:
-            labels[chart_title] = []
-            funvalues[chart_title] = []
+        for title in titles:
+            labels[title] = []
+            funvalues[title] = []
             for key in self.SBXi:
-                labels[chart_title].append(os.path.basename(self.file_paths[key]))
-                funvalues[chart_title].append(self.SBX_plot[key][chart_title][self.T1[key, :]] * self.k[key])
+                labels[title].append(os.path.basename(self.file_paths[key]))
+                funvalues[title].append(self.SBX_plot[key][title][self.T1[key, :]] * self.k[key])
         kwargs = {
             'xlabel': 'Time',
             'ylabel': 'Amplitude',
             'labels': labels,
             'funvalues': funvalues,
+
             'lw': 0.8,
             'titles': titles,
             'widget': widget,
         }
         chart = Canvas(parent=widget, **kwargs)
-        chart.setObjectName(f'{chart_title}chart')
+        chart.setObjectName(f'{title}chart')
         if widget is None:
             chart.show_plots()
         else:
-            self.main.ui.__dict__[f'{chart_title}chart'] = chart
-            toolbar = NavigationToolbar(self.main.ui.__dict__[f'{chart_title}chart'], widget)
-            self.main.ui.__dict__[f'{chart_title}toolbar'] = toolbar
-            toolbar.setObjectName(f'{chart_title}toolbar')
+            self.main.ui.__dict__[f'{title}chart'] = chart
+            toolbar = NavigationToolbar(self.main.ui.__dict__[f'{title}chart'], widget)
+            self.main.ui.__dict__[f'{title}toolbar'] = toolbar
+            toolbar.setObjectName(f'{title}toolbar')
             # Turn on pan/zoom mode from start
             toolbar.pan()
             widget.layout().addWidget(toolbar)
             widget.layout().addWidget(chart)
 
-    def unloading(self):
+    def unload(self):
         for key in self.SBXi:
             for XYZ in ['Z', 'X', 'Y']:
                 if self.extraFUP:
