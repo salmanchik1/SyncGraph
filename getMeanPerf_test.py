@@ -34,7 +34,7 @@ class Canvas(FigureCanvas):
         self.__dict__.update(kwargs)
         self.fig, self.axs = plt.subplots(
             nrows=3, ncols=1,  # rows and cols count
-            figsize=(1, 1), dpi=150, clear=True,  # dpi - whole mpl graphics scaling
+            figsize=(1, 1), dpi=180, clear=True,  # dpi - whole mpl graphics scaling
             sharex='all', sharey='all',  # All the plots have same parameters and scale together
             gridspec_kw={
                 'hspace': 0, 'wspace': 0,  # Space between plots
@@ -48,21 +48,56 @@ class Canvas(FigureCanvas):
         for i_xyz, xyz in enumerate(self.titles):
             self.val_count = len(self.funvalues[xyz])
             for i in range(self.val_count):
-                self.axs[i_xyz].plot(self.funvalues[xyz][i], label=self.labels[xyz][i], lw=self.lw)
+                self.axs[i_xyz].plot(
+                    self.funvalues[xyz][i],
+                    label=self.labels[xyz][i],
+                    lw=self.lw)
             self.axs[i_xyz].set(
-                xlabel=self.xlabel,
-                ylabel=self.ylabel,
-                title=self.titles[i_xyz],
+                ylabel=f'{self.titles[i_xyz]}[{self.ylabel}]',
+                xlabel=f'[{self.xlabel}]',
+                # title=self.titles[i_xyz],
             )
             self.axs[i_xyz].grid()
             # Hide x labels and tick labels for all but bottom plot.
             self.axs[i_xyz].label_outer()
         self.axs[0].legend(loc='upper right', ncol=self.val_count)
+        self.f = self.zoom_factory(self.axs[0], base_scale=1.5)
         # plt.show()
 
     def show_plots(self):
         plt.show()
 
+    def zoom_factory(self, ax, base_scale=2.):
+        """Adds zooming with mouse wheel."""
+        def zoom_fun(event):
+            # get the current x and y limits
+            xdata = event.xdata  # get event x location
+            ydata = event.ydata  # get event y location
+            if xdata is None or ydata is None:
+                return
+            cur_xlim = ax.get_xlim()
+            cur_ylim = ax.get_ylim()
+            if event.button == 'up':
+                # deal with zoom in
+                scale_factor = 1/base_scale
+            elif event.button == 'down':
+                # deal with zoom out
+                scale_factor = base_scale
+            else:
+                # deal with something that should never happen
+                scale_factor = 1
+                print(event.button)
+            # set new limits
+            ax.set_xlim([xdata - (xdata - cur_xlim[0])*scale_factor,
+                         xdata + (cur_xlim[1] - xdata)*scale_factor])
+            ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
+                         ydata + (cur_ylim[1] - ydata)*scale_factor])
+            ax.get_figure().canvas.draw_idle()  # force re-draw
+        fig = ax.get_figure()  # get the figure of interest
+        # attach the call back
+        fig.canvas.mpl_connect('scroll_event', zoom_fun)
+        #return the function
+        return zoom_fun
 
 class SyncMaker(object):
     def __init__(self, **kwargs):
@@ -141,8 +176,8 @@ class SyncMaker(object):
                 labels[chart_title].append(os.path.basename(self.file_paths[key]))
                 funvalues[chart_title].append(self.SBX_plot[key][chart_title][self.T1[key, :]] * self.k[key])
         kwargs = {
-            'xlabel': 'time',
-            'ylabel': 'frequency',
+            'xlabel': 'Time',
+            'ylabel': 'Amplitude',
             'labels': labels,
             'funvalues': funvalues,
             'lw': 0.8,
