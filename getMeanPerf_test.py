@@ -36,8 +36,13 @@ class Canvas(FigureCanvas):
             nrows=3, ncols=1,  # rows and cols count
             figsize=(1, 1), dpi=150, clear=True,  # dpi - whole mpl graphics scaling
             sharex='all', sharey='all',  # All the plots have same parameters and scale together
-            gridspec_kw={'hspace': 0},  # Space between plots
+            gridspec_kw={
+                'hspace': 0, 'wspace': 0,  # Space between plots
+                'left': 0.075, 'right': 0.95, 'top': 0.95, 'bottom': 0.05,  # borders
+            },
         )
+        if self.widget:
+            plt.close()
         super(Canvas, self).__init__(self.fig)
         self.setParent(parent)
         for i_xyz, xyz in enumerate(self.titles):
@@ -54,6 +59,9 @@ class Canvas(FigureCanvas):
             self.axs[i_xyz].label_outer()
         self.axs[0].legend(loc='upper right', ncol=self.val_count)
         # plt.show()
+
+    def show_plots(self):
+        plt.show()
 
 
 class SyncMaker(object):
@@ -80,7 +88,8 @@ class SyncMaker(object):
         self.NumCh = len(self.NamesOfSen)
 
     def make(self, widget=None):
-        self.main.clear_layout(widget.layout())
+        if widget is not None:
+            self.main.clear_layout(widget.layout())
         if self.mode == 'debugging':
             self.debugging()
             self.build_plots(widget)
@@ -118,44 +127,39 @@ class SyncMaker(object):
         #         ax.grid()
         #         ax.legend(loc='upper right', ncol=2)
         #         plt.show()
+
+        # setup font size for chart
+        font = {'family': 'Courier New', 'weight': 'bold', 'size': 4.5}
+        rc('font', **font)
+        labels = {}
+        funvalues = {}
+        titles = ['FZ', 'FX', 'FY']
+        for chart_title in titles:
+            labels[chart_title] = []
+            funvalues[chart_title] = []
+            for key in self.SBXi:
+                labels[chart_title].append(os.path.basename(self.file_paths[key]))
+                funvalues[chart_title].append(self.SBX_plot[key][chart_title][self.T1[key, :]] * self.k[key])
+        kwargs = {
+            'xlabel': 'time',
+            'ylabel': 'frequency',
+            'labels': labels,
+            'funvalues': funvalues,
+            'lw': 0.8,
+            'titles': titles,
+            'widget': widget,
+        }
+        chart = Canvas(parent=widget, **kwargs)
+        chart.setObjectName(f'{chart_title}chart')
         if widget is None:
-            for FZXY in ['FZ', 'FX', 'FY']:
-                fig, ax = plt.subplots()
-                for key in self.SBXi:
-                    ax.plot(
-                        self.SBX_plot[key][FZXY][self.T1[key, :]] * self.k[key],
-                        label=os.path.basename(self.file_paths[key]), lw=0.8)
-                plt.title(FZXY)
-                ax.grid()
-                ax.legend(loc='upper right', ncol=2)
-                plt.show()
+            chart.show_plots()
         else:
-            # setup font size for chart
-            font = {'family': 'Courier New', 'weight': 'bold', 'size': 4.5}
-            rc('font', **font)
-            labels = {}
-            funvalues = {}
-            titles = ['FZ', 'FX', 'FY']
-            for chart_title in titles:
-                labels[chart_title] = []
-                funvalues[chart_title] = []
-                for key in self.SBXi:
-                    labels[chart_title].append(os.path.basename(self.file_paths[key]))
-                    funvalues[chart_title].append(self.SBX_plot[key][chart_title][self.T1[key, :]] * self.k[key])
-            kwargs = {
-                'xlabel': 'time',
-                'ylabel': 'frequency',
-                'labels': labels,
-                'funvalues': funvalues,
-                'lw': 0.8,
-                'titles': titles,
-            }
-            self.main.ui.__dict__[f'{chart_title}chart'] = Canvas(parent=widget, **kwargs)
-            self.main.ui.__dict__[f'{chart_title}chart'].setObjectName(f'{chart_title}chart')
-            self.main.ui.__dict__[f'{chart_title}toolbar'] = NavigationToolbar(self.main.ui.__dict__[f'{chart_title}chart'], widget)
-            self.main.ui.__dict__[f'{chart_title}toolbar'].setObjectName(f'{chart_title}toolbar')
-            widget.layout().addWidget(self.main.ui.__dict__[f'{chart_title}toolbar'])
-            widget.layout().addWidget(self.main.ui.__dict__[f'{chart_title}chart'])
+            self.main.ui.__dict__[f'{chart_title}chart'] = chart
+            toolbar = NavigationToolbar(self.main.ui.__dict__[f'{chart_title}chart'], widget)
+            self.main.ui.__dict__[f'{chart_title}toolbar'] = toolbar
+            toolbar.setObjectName(f'{chart_title}toolbar')
+            widget.layout().addWidget(toolbar)
+            widget.layout().addWidget(chart)
 
     def unloading(self):
         for key in self.SBXi:
