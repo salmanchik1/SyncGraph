@@ -20,16 +20,26 @@ from matplotlib import rc
 
 
 def import_h5(file_paths):
-    sbx_i = dict()
-    for n_sbx, file_path in enumerate(file_paths):
-        with h5py.File(file_path, "r") as f:
+    if isinstance(file_paths, list):
+        files = dict()
+        for n_sbx, file_path in enumerate(file_paths):
+            with h5py.File(file_path, "r") as f:
+                keys = list(f.keys())
+                # print(keys)
+                sbx_f = f.get(keys[0])
+                files[n_sbx] = dict()
+                for key in sbx_f:
+                    files[n_sbx][key] = np.array(sbx_f[key])
+        return files
+    elif isinstance(file_paths, str):
+        with h5py.File(file_paths, "r") as f:
             keys = list(f.keys())
             # print(keys)
             sbx_f = f.get(keys[0])
-            sbx_i[n_sbx] = dict()
+            file = dict()
             for key in sbx_f:
-                sbx_i[n_sbx][key] = np.array(sbx_f[key])
-    return sbx_i
+                file[key] = np.array(sbx_f[key])
+        return file
 
 
 class Canvas(FigureCanvas):

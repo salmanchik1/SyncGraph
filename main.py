@@ -57,8 +57,8 @@ class SensorsModel(QAbstractListModel):
 class SyncMakerGraph(SyncMaker):
     """Value synchronizes with visual component"""
 
-    def __init__(self,  file_paths, main_window=None):
-        if main_window is None or not file_paths:
+    def __init__(self,  main_window=None):
+        if main_window is None:
             print('Main caller class not founded.')
             return
         else:
@@ -74,10 +74,11 @@ class SyncMakerGraph(SyncMaker):
         self.main.ui.unloadingRadioButton.clicked.connect(self.on_click_mode)  # 0 - debugging, 1 - unloading
         self.on_click_mode()
         self.on_select_ksen()
+        self.SBXi = {i: x for i, x in enumerate(self.main.checked_files.values())}
         # self.ksen = [0 for i in file_paths]
         kwargs = {
-            'file_paths': file_paths,  # a list of directories
-            'SBXi': import_h5(file_paths),  # SBXi: файлы
+            'file_paths': [*self.main.checked_files.keys()],  # a list of directories
+            'SBXi': self.SBXi,  # SBXi: файлы
             'tstrt': self.tstrt,  # tstrt: начало окна, отсчеты;
             'L': self.L,  # L: длина окна, отсчеты;
             'Lstd': self.Lstd,  # Lss: длина окна до взрыва для вычисления std, отсчеты;
@@ -91,8 +92,10 @@ class SyncMakerGraph(SyncMaker):
             'df': self.df,  # ширина медианного фильтра доп.фильтрации узкополосных помех, Гц
         }
         super().__init__(**kwargs)
-        self.main.ui.buildButton.clicked.connect(partial(self.make, widget=self.main.ui.graphsContainer))
         # self.make()
+
+    def on_click_build(self):
+        self.make(widget=self.main.ui.graphsContainer)
 
     def sync_vars(self, vars):
         """Synchronizes variables"""
@@ -156,6 +159,7 @@ class MainWindow(QMainWindow):
         # Create in_files model and connect it to listview
         self.in_files = InFilesModel()
         self.sbx_files = None  # Will load h5 files in this variable
+        self.checked_files = None
         self.sensors = None  # Will load sensors names in this variable
         self.ui.inFilesListView.setModel(self.in_files)
         # Buttons and other objects methods
@@ -166,20 +170,36 @@ class MainWindow(QMainWindow):
         # Import Window state from settings file
         self.import_state()
         self.sync_maker = None
+        self.refresh_in_files()
+
+    def refresh_in_files(self):
+        if self.sbx_files is None:
+            self.sbx_files = dict()
+        for path in self.in_files.paths:
+            if path[1] in self.sbx_files:
+                continue
+            try:
+                self.sbx_files[path[1]] = import_h5(path[1])
+            except Exception as e:
+                print(f'Exception:{e}\n'
+                      "File reading error or it doesn't exist.")
+        # Clear out redundant items from sbx_files (free up the memory)
+        delete = [key for key in self.sbx_files.keys() if key not in
+                  [x[1] for x in self.in_files.paths]]
+        for key in delete:
+            del self.sbx_files[key]
 
     def on_click_load(self):
-        self.in_files.checked_list = [x[1] for x in self.in_files.paths if x[0]]
-        try:
-            self.sbx_files = import_h5(self.in_files.checked_list)
-        except Exception:
-            print(f'Exception:{Exception}\n'
-                  "File reading error or it doesn't exist.")
-            return
+        self.checked_files = dict()
+        for item in self.sbx_files.items():
+            if [True, item[0]] in self.in_files.paths:
+                self.checked_files[item[0]] = item[1]
         layout = self.ui.shiftsScrollArea.widget().layout()
         self.clear_layout(layout)
         self.fill_shifts(layout)
         self.fill_sensors()
-        self.sync_maker = SyncMakerGraph(main_window=self, file_paths=self.in_files.checked_list)
+        self.sync_maker = SyncMakerGraph(main_window=self)
+        self.ui.buildButton.clicked.connect(self.sync_maker.on_click_build)
 
     def fill_sensors(self):
         if len(self.sbx_files) > 0:
@@ -211,10 +231,10 @@ class MainWindow(QMainWindow):
                 child.widget().deleteLater()
 
     def fill_shifts(self, layout):
-        for i_sbx, sbx_file in enumerate(self.sbx_files):
+        for i_sbx, filename in enumerate(self.checked_files):
             label = QLabel(layout.parent())
             label.setObjectName(f"dT{i_sbx}Label")
-            label.setText(f"File_{i_sbx}: {os.path.basename(self.in_files.checked_list[i_sbx])}")
+            label.setText(f"File_{i_sbx}: {os.path.basename(filename)}")
             edit_field = QDoubleSpinBox(layout.parent())
             edit_field.setObjectName(f"dT{i_sbx}Edit")
             edit_field.setMinimum(-65000)
@@ -248,6 +268,7 @@ class MainWindow(QMainWindow):
                 self.in_files.paths.append([False, filename])
         # Trigger refresh.
         self.in_files.layoutChanged.emit()
+        self.refresh_in_files()
 
     def delete_in_files(self):
         if QMessageBox.question(
@@ -265,6 +286,7 @@ class MainWindow(QMainWindow):
             self.in_files.layoutChanged.emit()
             # Clear the selection (as it is no longer valid).
             self.ui.inFilesListView.clearSelection()
+        self.refresh_in_files()
 
     def refresh_in_files_ui(self):
         for i in self.state_ui['in_files']:
