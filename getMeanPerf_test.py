@@ -73,6 +73,7 @@ class Canvas(FigureCanvas):
             self.axs[i_xyz].grid()
             # Hide x labels and tick labels for all but bottom plot.
             self.axs[i_xyz].label_outer()
+        self.fig.suptitle(self.suptitle)
         self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
         self.f = self.zoom_factory(self.axs[0], base_scale=1.1)
         # plt.show()
@@ -155,7 +156,7 @@ class SyncMaker(object):
         self.NumCh = len(self.NamesOfSen)
         if self.mode == 'debugging':
             self.get_plots()
-            self.build_plots(widget)
+            self.draw_plots(widget)
         else:
             SBXm = self.unload()
             # save_output(SBXi, SBXm)
@@ -177,7 +178,7 @@ class SyncMaker(object):
                 # SBX_plot[key]['F' + XYZ] = lfilter(b, 1, signal)[:, int((len(b) - 1)/2):]
                 self.SBX_plot[key]['F' + XYZ] = filtfilt(self.b, 1, signal)
 
-    def build_plots(self, widget=None):
+    def draw_plots(self, widget=None):
         # for key in self.SBXi:
         #     for FZXY in ['FZ', 'FX', 'FY']:
         #         fig, ax = plt.subplots()
@@ -208,7 +209,7 @@ class SyncMaker(object):
             'ylabel': 'Amplitude',
             'labels': labels,
             'funvalues': funvalues,
-
+            'suptitle': f'Sensor: {self.selected_s_name}',
             'lw': 0.8,
             'titles': titles,
             'widget': widget,

@@ -58,6 +58,7 @@ class SyncMakerGraph(SyncMaker):
     """Value synchronizes with visual component"""
 
     def __init__(self,  main_window=None):
+        self.selected_s_name = None
         if main_window is None:
             print('Main caller class not founded.')
             return
@@ -66,14 +67,14 @@ class SyncMakerGraph(SyncMaker):
         var_names = ['tstrt', 'L', 'Lstd', 'Fpass1', 'Fpass2', 'df', 'lev']
         self.sync_vars(var_names)
         self.sync_dTs()
-        self.main.ui.sensorsListView.clicked.connect(self.on_select_ksen)
+        self.main.ui.sensorsListView.clicked.connect(self.on_select_sensor)
         self.extraFUP = self.main.ui.extraFUPCheckBox.isChecked()
         self.main.ui.extraFUPCheckBox.clicked.connect(
             partial(self.on_click_checkbox, variable_name='extraFUP'))
         self.main.ui.debuggingRadioButton.clicked.connect(self.on_click_mode)  # 0 - debugging, 1 - unloading
         self.main.ui.unloadingRadioButton.clicked.connect(self.on_click_mode)  # 0 - debugging, 1 - unloading
         self.on_click_mode()
-        self.on_select_ksen()
+        self.on_select_sensor()
         self.SBXi = {i: x for i, x in enumerate(self.main.checked_files.values())}
         # self.ksen = [0 for i in file_paths]
         kwargs = {
@@ -126,12 +127,13 @@ class SyncMakerGraph(SyncMaker):
         self.__dict__[variable_name] = self.main.ui.__dict__[f'{variable_name}Edit'].value()
         print(f'{variable_name} = {self.__dict__[f"{variable_name}"]}')
 
-    def on_select_ksen(self):
+    def on_select_sensor(self):
         try:
             selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row()
         except Exception:
             selected_index = 1
-        self.ksen = self.main.ksen[f'{selected_index+1:05.0f}']
+        self.selected_s_name = f'{selected_index + 1:05.0f}'
+        self.ksen = self.main.s_names[self.selected_s_name]
         # self.make(widget=self.main.ui.graphsContainer)
         print(self.ksen)
 
@@ -203,18 +205,18 @@ class MainWindow(QMainWindow):
 
     def fill_sensors(self):
         if len(self.sbx_files) > 0:
-            self.ksen = dict()
+            self.s_names = dict()
             for file_id, sbx_file in enumerate(self.sbx_files.items()):
                 for i, x in enumerate(sbx_file[1]['field'][0]):
                     s_name = f'{x:05.0f}'
-                    if s_name not in self.ksen:
-                        self.ksen[s_name] = [None for x in range(file_id)]
-                    self.ksen[f'{s_name}'].append(i)
-                for i in self.ksen.values():
+                    if s_name not in self.s_names:
+                        self.s_names[s_name] = [None for x in range(file_id)]
+                    self.s_names[f'{s_name}'].append(i)
+                for i in self.s_names.values():
                     if len(i) < file_id + 1:
                         i.append(None)
 
-            self.sensors = SensorsModel(ids=sorted(self.ksen))
+            self.sensors = SensorsModel(ids=sorted(self.s_names))
             self.ui.sensorsListView.setModel(self.sensors)
         else:
             if self.sensors is not None:
