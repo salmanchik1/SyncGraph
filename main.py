@@ -95,7 +95,7 @@ class SyncMakerGraph(SyncMaker):
         # self.make()
 
     def on_click_build(self):
-        self.make(widget=self.main.ui.graphsContainer)
+        self.make_build(widget=self.main.ui.graphsContainer)
 
     def sync_vars(self, vars):
         """Synchronizes variables"""
@@ -239,7 +239,7 @@ class MainWindow(QMainWindow):
             edit_field.setObjectName(f"dT{i_sbx}Edit")
             edit_field.setMinimum(-65000)
             edit_field.setMaximum(65000)
-            edit_field.setValue(i_sbx*100)
+            edit_field.setValue(i_sbx*5)
             self.ui.__dict__[f'dT{i_sbx}Label'] = label
             self.ui.__dict__[f'dT{i_sbx}Edit'] = edit_field
             layout.addWidget(label, i_sbx, 0, 1, 1)

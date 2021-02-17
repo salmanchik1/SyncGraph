@@ -130,7 +130,10 @@ class SyncMaker(object):
         self.extraFUP = None
         self.ksen = None
         self.df = None
+        self.axis = None
         self.__dict__.update(kwargs)
+
+    def make_build(self, widget=None):
         self.nSBX = len(self.SBXi)
         key = list(self.SBXi.keys())[0]
         self.LenOfSignal = self.SBXi[key]['SZ'].shape[1]
@@ -150,10 +153,6 @@ class SyncMaker(object):
         self.k = np.ones(self.nSBX) * 1000000 * 1.91037945231066 * (10 ** -8) / self.fd
         self.acor = 1  # неизвестная константа?
         self.NumCh = len(self.NamesOfSen)
-
-    def make(self, widget=None):
-        if widget is not None:
-            self.main.clear_layout(widget.layout())
         if self.mode == 'debugging':
             self.get_plots()
             self.build_plots(widget)
@@ -215,6 +214,11 @@ class SyncMaker(object):
             'widget': widget,
         }
         chart = Canvas(parent=widget, **kwargs)
+        if self.axis:
+            chart.axs[0].set_xlim(self.axis.get_xlim())
+            chart.axs[0].set_ylim(self.axis.get_ylim())
+        self.axis = chart.axs[0]
+
         chart.setObjectName(f'{title}chart')
         if widget is None:
             chart.show_plots()
@@ -225,6 +229,7 @@ class SyncMaker(object):
             toolbar.setObjectName(f'{title}toolbar')
             # Turn on pan/zoom mode from start
             toolbar.pan()
+            self.main.clear_layout(widget.layout())
             widget.layout().addWidget(toolbar)
             widget.layout().addWidget(chart)
 
@@ -339,7 +344,7 @@ def main():
     }
     ########################################################################################################################
     sync_maker = SyncMaker(**kwargs)
-    sync_maker.make()
+    sync_maker.make_build()
 
 
 if __name__ == '__main__':
