@@ -148,6 +148,13 @@ class SyncMakerGraph(SyncMaker):
             self.mode = 'unloading'
         print(f'mode = {self.mode}')
 
+    def reload(self, **kwargs):
+        self.__dict__.update(kwargs)
+        self.sync_dTs()
+        var_names = ['tstrt', 'L', 'Lstd', 'Fpass1', 'Fpass2', 'df', 'lev']
+        self.sync_vars(var_names)
+        self.on_select_sensor()
+
 
 class MainWindow(QMainWindow):
     """The main window of the application."""
@@ -200,7 +207,14 @@ class MainWindow(QMainWindow):
         self.clear_layout(layout)
         self.fill_shifts(layout)
         self.fill_sensors()
-        self.sync_maker = SyncMakerGraph(main_window=self)
+        if self.sync_maker is None:
+            self.sync_maker = SyncMakerGraph(main_window=self)
+        else:
+            kwargs = {
+                'SBXi': {i: x for i, x in enumerate(self.checked_files.values())},
+                'file_paths': [*self.checked_files.keys()]
+            }
+            self.sync_maker.reload(**kwargs)
         self.ui.buildButton.clicked.connect(self.sync_maker.on_click_build)
 
     def fill_sensors(self):

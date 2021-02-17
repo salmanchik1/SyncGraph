@@ -134,6 +134,7 @@ class SyncMaker(object):
         self.axis = None
         self.__dict__.update(kwargs)
 
+
     def make_build(self, widget=None):
         self.nSBX = len(self.SBXi)
         key = list(self.SBXi.keys())[0]
