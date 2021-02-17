@@ -129,10 +129,10 @@ class SyncMakerGraph(SyncMaker):
 
     def on_select_sensor(self):
         try:
-            selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row()
+            selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row() + 1
         except Exception:
             selected_index = 1
-        self.selected_s_name = f'{selected_index + 1:05.0f}'
+        self.selected_s_name = f'{selected_index:05.0f}'
         self.ksen = self.main.s_names[self.selected_s_name]
         # self.make(widget=self.main.ui.graphsContainer)
         print(self.ksen)
@@ -204,17 +204,17 @@ class MainWindow(QMainWindow):
         self.ui.buildButton.clicked.connect(self.sync_maker.on_click_build)
 
     def fill_sensors(self):
-        if len(self.sbx_files) > 0:
+        if len(self.checked_files) > 0:
             self.s_names = dict()
-            for file_id, sbx_file in enumerate(self.sbx_files.items()):
-                for i, x in enumerate(sbx_file[1]['field'][0]):
+            for file_id, _file in enumerate(self.checked_files.items()):
+                for i, x in enumerate(_file[1]['field'][0]):
                     s_name = f'{x:05.0f}'
                     if s_name not in self.s_names:
-                        self.s_names[s_name] = [None for x in range(file_id)]
-                    self.s_names[f'{s_name}'].append(i)
-                for i in self.s_names.values():
-                    if len(i) < file_id + 1:
-                        i.append(None)
+                        self.s_names[s_name] = [None for _ in range(file_id-1)]
+                    self.s_names[s_name].append(i + 1)
+            for i in self.s_names.values():
+                if len(i) < len(self.checked_files) + 1:
+                    i.append(None)
 
             self.sensors = SensorsModel(ids=sorted(self.s_names))
             self.ui.sensorsListView.setModel(self.sensors)
