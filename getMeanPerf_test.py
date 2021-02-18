@@ -45,6 +45,7 @@ def import_h5(file_paths):
 class Canvas(FigureCanvas):
     def __init__(self, parent, **kwargs):
         self.__dict__.update(kwargs)
+        # plt.ion()
         self.fig, self.axs = plt.subplots(
             nrows=3, ncols=1,  # rows and cols count
             figsize=(1, 1), dpi=180, clear=True,  # dpi - whole mpl graphics scaling
@@ -58,8 +59,8 @@ class Canvas(FigureCanvas):
             plt.close()
         super(Canvas, self).__init__(self.fig)
         self.setParent(parent)
+        self.val_count = len(self.funvalues[self.titles[0]])
         for i_xyz, xyz in enumerate(self.titles):
-            self.val_count = len(self.funvalues[xyz])
             for i in range(self.val_count):
                 self.axs[i_xyz].plot(
                     self.funvalues[xyz][i],
@@ -77,6 +78,33 @@ class Canvas(FigureCanvas):
         self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
         self.f = self.zoom_factory(self.axs[0], base_scale=1.1)
         # plt.show()
+
+    def reload(self, **kwargs):
+        self.__dict__.update(kwargs)
+        self.xlim = self.axs[0].get_xlim()
+        self.ylim = self.axs[0].get_ylim()
+        self.val_count = len(self.funvalues[self.titles[0]])
+        for i_xyz, xyz in enumerate(self.titles):
+            self.axs[i_xyz].clear()
+            for i in range(self.val_count):
+                self.axs[i_xyz].plot(
+                    self.funvalues[xyz][i],
+                    label=self.labels[xyz][i],
+                    lw=self.lw)
+            prop = {
+                'ylabel': f'{self.titles[i_xyz]}[{self.ylabel}]',
+                'xlabel': f'[{self.xlabel}]',
+                # title=self.titles[i_xyz],
+            }
+            self.axs[i_xyz].grid()
+            # Hide x labels and tick labels for all but bottom plot.
+            self.axs[i_xyz].label_outer()
+            self.axs[i_xyz].update(prop)
+        self.fig.suptitle(self.suptitle)
+        self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
+        self.axs[0].set_xlim(self.xlim)
+        self.axs[0].set_ylim(self.ylim)
+        self.fig.canvas.draw_idle()
 
     def show_plots(self):
         plt.show()
@@ -132,6 +160,7 @@ class SyncMaker(object):
         self.ksen = None
         self.df = None
         self.axis = None
+        self.chart = None
         self.__dict__.update(kwargs)
 
 
@@ -215,25 +244,24 @@ class SyncMaker(object):
             'titles': titles,
             'widget': widget,
         }
-        chart = Canvas(parent=widget, **kwargs)
-        if self.axis:
-            chart.axs[0].set_xlim(self.axis.get_xlim())
-            chart.axs[0].set_ylim(self.axis.get_ylim())
-        self.axis = chart.axs[0]
-
-        chart.setObjectName(f'{title}chart')
-        if widget is None:
-            chart.show_plots()
+        if self.chart is None:
+            self.chart = Canvas(parent=widget, **kwargs)
+            self.chart.setObjectName(f'{title}chart')
+            if widget is None:
+                self.chart.show_plots()
+            else:
+                self.main.ui.__dict__[f'{title}chart'] = self.chart
+                self.toolbar = NavigationToolbar(self.main.ui.__dict__[f'{title}chart'], widget)
+                self.main.ui.__dict__[f'{title}toolbar'] = self.toolbar
+                self.toolbar.setObjectName(f'{title}toolbar')
+                # Turn on pan/zoom mode from start
+                self.toolbar.pan()
+                self.main.clear_layout(widget.layout())
+                widget.layout().addWidget(self.toolbar)
+                widget.layout().addWidget(self.chart)
         else:
-            self.main.ui.__dict__[f'{title}chart'] = chart
-            toolbar = NavigationToolbar(self.main.ui.__dict__[f'{title}chart'], widget)
-            self.main.ui.__dict__[f'{title}toolbar'] = toolbar
-            toolbar.setObjectName(f'{title}toolbar')
-            # Turn on pan/zoom mode from start
-            toolbar.pan()
-            self.main.clear_layout(widget.layout())
-            widget.layout().addWidget(toolbar)
-            widget.layout().addWidget(chart)
+            self.chart.reload(**kwargs)
+
 
     def unload(self):
         for key in self.SBXi:
