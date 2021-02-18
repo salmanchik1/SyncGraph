@@ -39,19 +39,25 @@ def import_h5(file_paths):
         return file
 
 
-def export_h5(SBXi, SBXm, path=None):
+def export_h5(SBXi, NamesOfSen_lst, inds, indsC, SBXm=None, path=None):
     # save output SBXi, SBXm:
     if path is None:
-        path = os.path.normpath(os.getcwd())
-    for key in SBXi:
-        with h5py.File(os.sep.join([f"{path}", f"SBX{key}.h5"]), 'w') as f:
-            group = f.create_group('SBX')
+        path = os.path.normpath(os.sep.join([os.getcwd(), 'Sync_out.h5']))
+    with h5py.File(path, 'w') as f:
+        f.create_dataset('sen_names', data=NamesOfSen_lst)
+        for ZXY in ['Z', 'X', 'Y']:
+            f.create_dataset(f'inds{ZXY}', data=inds[ZXY])
+            f.create_dataset(f'indsC{ZXY}', data=indsC[ZXY])
+        group_SBX = f.create_group('SBX')
+        for key in SBXi:
+            group_SBXi = group_SBX.create_group(f'SBX{key}')
             for sub_key in SBXi[key]:
-                group.create_dataset(sub_key, data=SBXi[key][sub_key])
-    with h5py.File(os.sep.join([f"{path}", f"SBXm.h5"]), 'w') as f:
-        group = f.create_group('SBX')
-        for sub_key in SBXm:
-            group.create_dataset(sub_key, data=SBXm[sub_key])
+                group_SBXi.create_dataset(sub_key, data=SBXi[key][sub_key])
+    if SBXm:
+        with h5py.File(os.sep.join([f"{path}", f"SBXm.h5"]), 'w') as f:
+            group = f.create_group('SBX')
+            for sub_key in SBXm:
+                group.create_dataset(sub_key, data=SBXm[sub_key])
 
 
 class SyncMaker(object):
@@ -93,6 +99,11 @@ class SyncMaker(object):
 
         self.get_plots()
         self.draw_plots(widget)
+        if self.mode == 'unloading':
+            if self.get_output():
+                export_h5(
+                    self.SBXi, NamesOfSen_lst=self.NamesOfSen_lst,
+                    inds=self.inds, indsC=self.indsC)
 
     def get_plots(self):
         self.SBX_plot = dict()
@@ -184,27 +195,40 @@ class SyncMaker(object):
                 # self.SBXi[key]['F'+XYZ] = lfilter(self.b, 1, self.SBXi[key]['S'+XYZ])[:, int((len(self.b) - 1)/2):]
                 self.SBXi[key]['F' + XYZ] = filtfilt(self.b, 1, self.SBXi[key]['S' + XYZ])
         # создаем усредненный SBX
-        field = np.zeros((4, len(self.NamesOfSen)))
-        field[0, :] = np.array(list(self.NamesOfSen))
-        self.SBXm = {
-            'SZ': np.full((self.NumCh, self.L), np.nan),
-            'SX': np.full((self.NumCh, self.L), np.nan),
-            'SY': np.full((self.NumCh, self.L), np.nan),
-            'fd': self.fd,
-            # заполняем field для него из всех входных SBX( field может отличаться, координаты для одинаковых сенсоров тоже)
-            'field': field,}
-        keys = cycle(list(self.SBXi.keys()))
-        key = next(keys)
-        for i in range(len(self.NamesOfSen)):
-            while self.SBXm['field'][0, i] not in self.SBXi[key]['field'][0, :]:
-                key = next(keys)
-            index = np.where(self.SBXi[key]['field'][0, :] == self.SBXm['field'][0, i])[0][0]
-            self.SBXm['field'][:, i] = self.SBXi[key]['field'][:, index]
+        # field = np.zeros((4, len(self.NamesOfSen)))
+        # field[0, :] = np.array(list(self.NamesOfSen))
+        # self.SBXm = {
+        #     'SZ': np.full((self.NumCh, self.L), np.nan),
+        #     'SX': np.full((self.NumCh, self.L), np.nan),
+        #     'SY': np.full((self.NumCh, self.L), np.nan),
+        #     'fd': self.fd,
+        #     # заполняем field для него из всех входных SBX( field может отличаться, координаты для одинаковых сенсоров тоже)
+        #     'field': field,}
+        # keys = cycle(list(self.SBXi.keys()))
+        # key = next(keys)
+        # for i in range(len(self.NamesOfSen)):
+        #     while self.SBXm['field'][0, i] not in self.SBXi[key]['field'][0, :]:
+        #         key = next(keys)
+        #     index = np.where(self.SBXi[key]['field'][0, :] == self.SBXm['field'][0, i])[0][0]
+        #     self.SBXm['field'][:, i] = self.SBXi[key]['field'][:, index]
+        # 
+        # self.inds = np.empty((self.NumCh * 3, self.nSBX), dtype=int)
+        # self.indsC = np.empty(self.NumCh * 3, dtype=int)
+        
+        self.inds = {
+            'Z': np.zeros((self.NumCh, self.nSBX), dtype=int),
+            'X': np.zeros((self.NumCh, self.nSBX), dtype=int),
+            'Y': np.zeros((self.NumCh, self.nSBX), dtype=int)
+        }
+        self.indsC = {
+            'Z': np.zeros(self.NumCh, dtype=int),
+            'X': np.zeros(self.NumCh, dtype=int),
+            'Y': np.zeros(self.NumCh, dtype=int)
+        }
     
-        self.inds = np.empty((self.NumCh * 3, self.nSBX), dtype=int)
-        self.indsC = np.empty(self.NumCh * 3, dtype=int)
-    
-        for ch in self.NamesOfSen:
+        self.NamesOfSen_lst = []
+        for sen_ind, sen in enumerate(self.NamesOfSen):
+            self.NamesOfSen_lst.append(sen)
             jj = 0
             # fig, axs = plt.subplots(3, 1, constrained_layout=True)
             # fig.suptitle('Channel number: ' + str(int(SBXi[0]['field'][0, ch])), fontsize=16)
@@ -213,30 +237,33 @@ class SyncMaker(object):
                 Ss = np.full((self.nSBX, self.L), np.nan)    # np.full((2, 3), np.nan)
                 Sstd = np.full((self.nSBX, self.Lstd), np.nan)
                 for i in range(self.nSBX):
-                    Ss[i, :] = getSBXsen(self.SBXi[i], 'F'+ZXY, ch)[self.T1[i, :]]*self.k[i]
-                    Sstd[i, :] = getSBXsen(self.SBXi[i], 'F' + ZXY, ch)[self.T1[i, 0:self.Lstd]] * self.k[i]
+                    Ss[i, :] = getSBXsen(self.SBXi[i], 'F'+ZXY, sen)[self.T1[i, :]]*self.k[i]
+                    Sstd[i, :] = getSBXsen(self.SBXi[i], 'F' + ZXY, sen)[self.T1[i, 0:self.Lstd]] * self.k[i]
                 std = np.std(Sstd, axis=1)
                 I = std.argsort(axis=0)
                 std.sort(axis=0)
                 I = np.concatenate((I[std != 0], I[std == 0]))
-                self.inds[int((ch-1)*3+jj), :] = I
+
+                # inds[int((sen-1)*3+jj), :] = I
+                self.inds[ZXY][sen_ind, :] = I
                 I = I[std < self.lev]
-                self.indsC[int((ch-1)*3+jj)] = len(I)
+                # indsC[int((sen-1)*3+jj)] = len(I)
+                self.indsC[ZXY][sen_ind] = len(I)
     
                 # plot ?
                 # axs[jj].plot(np.mean(Ss[I, :], axis=0)*len(I))
                 # axs[jj].set_title(ZXY)
                 # axs[jj].axis([0, L, -1, 1])
     
-                setSBXsen(self.SBXm, 'S'+ZXY, ch, np.mean(Ss[I, :], axis=0))
+                # setSBXsen(self.SBXm, 'S'+ZXY, sen, np.mean(Ss[I, :], axis=0))
                 jj += 1
     
             # plt.show()
     
         self.dT = self.dT + self.time0[0]
-        self.SBXm['SZ'][np.isnan(self.SBXm['SZ'])] = 0
-        self.SBXm['SX'][np.isnan(self.SBXm['SX'])] = 0
-        self.SBXm['SY'][np.isnan(self.SBXm['SY'])] = 0
+        # self.SBXm['SZ'][np.isnan(self.SBXm['SZ'])] = 0
+        # self.SBXm['SX'][np.isnan(self.SBXm['SX'])] = 0
+        # self.SBXm['SY'][np.isnan(self.SBXm['SY'])] = 0
     
         for key in self.SBXi:
             for ZXY in ['Z', 'X', 'Y']:

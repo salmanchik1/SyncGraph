@@ -97,11 +97,13 @@ class SyncMakerGraph(SyncMaker):
         # self.make()
 
     def on_click_export(self):
-        path = QFileDialog().getExistingDirectory(
-            self.main, "Choose a folder to save output files", os.getcwd(),
+        filepath, filetype = QFileDialog().getSaveFileName(
+            self.main, "Choose a directory and file name to save", os.getcwd(), "H5 data file (*.h5)",
         )
         if self.get_output():
-            export_h5(self.SBXi, self.SBXm, path=path)
+            export_h5(
+                self.SBXi, NamesOfSen_lst=self.NamesOfSen_lst,
+                inds=self.inds, indsC=self.indsC, path=filepath)
 
     def on_click_build(self):
         self.make_build(widget=self.main.ui.graphsContainer)
