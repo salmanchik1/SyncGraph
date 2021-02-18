@@ -192,8 +192,7 @@ class SyncMaker(object):
 
         self.fd = self.SBXi[key]['fd'][0][0]  # частота дискретизации сигнала
         self.b = filter_f(self.fd, self.Fpass1, self.Fpass2)
-        self.tstrt = self.tstrt / self.fd
-        self.time0 = np.arange(self.L, dtype=int) + self.tstrt * self.fd
+        self.time0 = np.arange(self.L, dtype=int) + self.tstrt
         self.T1 = np.zeros((self.nSBX, self.L), dtype=int)
         for i in range(self.nSBX):
             self.T1[i, :] = self.dT[i] + self.time0
@@ -354,6 +353,7 @@ class SyncMaker(object):
                 self.SBXi[key]['S'+ZXY] = self.SBXi[key]['F'+ZXY][:, self.T1[key, :]]
                 del self.SBXi[key]['F'+ZXY]
         # Output:  self.inds, self.indsC, self.SBXm, self.SBXi - обрезанные по L
+        return True
 
 
 def main():
