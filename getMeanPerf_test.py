@@ -278,6 +278,8 @@ class SyncMaker(object):
             self.chart.reload(**kwargs)
 
     def get_output(self):
+        if self.SBXi is None:
+            return None
         for key in self.SBXi:
             for XYZ in ['Z', 'X', 'Y']:
                 if self.extraFUP:
