@@ -4,8 +4,8 @@ from functools import partial
 
 import h5py
 from PyQt5.QtCore import QAbstractListModel, Qt, QSize, QAbstractItemModel
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox, QDoubleSpinBox, QLabel
-from getMeanPerf_test import SyncMaker, import_h5
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QMessageBox, QLabel, QSpinBox
+from getMeanPerf_test import SyncMaker, import_h5, export_h5
 from SyncGraph import Ui_syncGraphMainWindow  # Graphical user interface
 from matplotlib import pyplot as plt
 import os
@@ -76,6 +76,7 @@ class SyncMakerGraph(SyncMaker):
         self.on_click_mode()
         self.on_select_sensor()
         self.SBXi = {i: x for i, x in enumerate(self.main.checked_files.values())}
+        self.main.ui.exportButton.clicked.connect(self.on_click_export)
         # self.ksen = [0 for i in file_paths]
         kwargs = {
             'file_paths': [*self.main.checked_files.keys()],  # a list of directories
@@ -95,6 +96,13 @@ class SyncMakerGraph(SyncMaker):
         super().__init__(**kwargs)
         # self.make()
 
+    def on_click_export(self):
+        # self.get_output()
+        path = QFileDialog().getExistingDirectory(
+            self.main, "Choose a folder to save output files", os.getcwd(),
+        )
+        export_h5(self.SBXi, self.SBXm, path=path)
+
     def on_click_build(self):
         self.make_build(widget=self.main.ui.graphsContainer)
 
@@ -111,7 +119,7 @@ class SyncMakerGraph(SyncMaker):
         self.dT = []
         i_variable = 0
         for child in self.main.ui.shiftsScrollArea.widget().children():
-            if isinstance(child, QDoubleSpinBox):
+            if isinstance(child, QSpinBox):
                 self.dT.append(f'dT{i_variable}')
                 self.main.ui.__dict__[f'dT{i_variable}Edit'].textChanged.connect(
                     partial(self.on_click_dT, index=i_variable))
@@ -238,7 +246,8 @@ class MainWindow(QMainWindow):
                 self.sensors = SensorsModel(ids=[])
                 self.ui.sensorsListView.setModel(self.sensors)
 
-    def clear_layout(self, layout):
+    @staticmethod
+    def clear_layout(layout):
         if layout is None:
             return
         while layout.count():
@@ -251,7 +260,7 @@ class MainWindow(QMainWindow):
             label = QLabel(layout.parent())
             label.setObjectName(f"dT{i_sbx}Label")
             label.setText(f"File_{i_sbx}: {os.path.basename(filename)}")
-            edit_field = QDoubleSpinBox(layout.parent())
+            edit_field = QSpinBox(layout.parent())
             edit_field.setObjectName(f"dT{i_sbx}Edit")
             edit_field.setMinimum(-65000)
             edit_field.setMaximum(65000)
@@ -273,6 +282,7 @@ class MainWindow(QMainWindow):
                 self.in_files.paths[index.row()][0] = value
             self.in_files.layoutChanged.emit()
             self.ui.inFilesListView.reset()
+        e.accept()
 
     def add_in_files(self):
         filenames, filetype = QFileDialog.getOpenFileNames(
@@ -325,6 +335,12 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Raises on main window closing"""
         self.export_state()
+        event.accept()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            if self.sync_maker is not None:
+                self.sync_maker.on_click_build()
         event.accept()
 
 

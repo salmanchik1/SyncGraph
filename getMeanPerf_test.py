@@ -42,6 +42,21 @@ def import_h5(file_paths):
         return file
 
 
+def export_h5(SBXi, SBXm, path=None):
+    # save output SBXi, SBXm:
+    if path is None:
+        path = os.path.normpath(os.getcwd())
+    for key in SBXi:
+        with h5py.File(os.sep.join([f"{path}", f"SBX{key}.h5"]), 'w') as f:
+            group = f.create_group('SBX')
+            for sub_key in SBXi[key]:
+                group.create_dataset(sub_key, data=SBXi[key][sub_key])
+    with h5py.File(os.sep.join([f"{path}", f"SBXm.h5"]), 'w') as f:
+        group = f.create_group('SBX')
+        for sub_key in SBXm:
+            group.create_dataset(sub_key, data=SBXm[sub_key])
+
+
 class Canvas(FigureCanvas):
     def __init__(self, parent, **kwargs):
         self.__dict__.update(kwargs)
@@ -63,6 +78,7 @@ class Canvas(FigureCanvas):
         for i_xyz, xyz in enumerate(self.titles):
             for i in range(self.val_count):
                 self.axs[i_xyz].plot(
+                    [i / self.fd for i in range(len(self.funvalues[xyz][i]))],
                     self.funvalues[xyz][i],
                     label=self.labels[xyz][i],
                     lw=self.lw)
@@ -88,6 +104,7 @@ class Canvas(FigureCanvas):
             self.axs[i_xyz].clear()
             for i in range(self.val_count):
                 self.axs[i_xyz].plot(
+                    [i / self.fd for i in range(len(self.funvalues[xyz][i]))],
                     self.funvalues[xyz][i],
                     label=self.labels[xyz][i],
                     lw=self.lw)
@@ -104,7 +121,7 @@ class Canvas(FigureCanvas):
         self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
         self.axs[0].set_xlim(self.xlim)
         self.axs[0].set_ylim(self.ylim)
-        self.fig.canvas.draw_idle()
+        self.fig.canvas.draw()
 
     def show_plots(self):
         plt.show()
@@ -184,12 +201,9 @@ class SyncMaker(object):
         self.k = np.ones(self.nSBX) * 1000000 * 1.91037945231066 * (10 ** -8) / self.fd
         self.acor = 1  # неизвестная константа?
         self.NumCh = len(self.NamesOfSen)
-        if self.mode == 'debugging':
-            self.get_plots()
-            self.draw_plots(widget)
-        else:
-            SBXm = self.unload()
-            # save_output(SBXi, SBXm)
+
+        self.get_plots()
+        self.draw_plots(widget)
 
     def get_plots(self):
         self.SBX_plot = dict()
@@ -243,6 +257,7 @@ class SyncMaker(object):
             'lw': 0.8,
             'titles': titles,
             'widget': widget,
+            'fd': self.fd,
         }
         if self.chart is None:
             self.chart = Canvas(parent=widget, **kwargs)
@@ -262,8 +277,7 @@ class SyncMaker(object):
         else:
             self.chart.reload(**kwargs)
 
-
-    def unload(self):
+    def get_output(self):
         for key in self.SBXi:
             for XYZ in ['Z', 'X', 'Y']:
                 if self.extraFUP:
@@ -296,8 +310,8 @@ class SyncMaker(object):
             index = np.where(self.SBXi[key]['field'][0, :] == self.SBXm['field'][0, i])[0][0]
             self.SBXm['field'][:, i] = self.SBXi[key]['field'][:, index]
     
-        inds = np.empty((self.NumCh * 3, self.nSBX), dtype=int)
-        indsC = np.empty(self.NumCh * 3, dtype=int)
+        self.inds = np.empty((self.NumCh * 3, self.nSBX), dtype=int)
+        self.indsC = np.empty(self.NumCh * 3, dtype=int)
     
         for ch in self.NamesOfSen:
             jj = 0
@@ -314,9 +328,9 @@ class SyncMaker(object):
                 I = std.argsort(axis=0)
                 std.sort(axis=0)
                 I = np.concatenate((I[std != 0], I[std == 0]))
-                inds[int((ch-1)*3+jj), :] = I
+                self.inds[int((ch-1)*3+jj), :] = I
                 I = I[std < self.lev]
-                indsC[int((ch-1)*3+jj)] = len(I)
+                self.indsC[int((ch-1)*3+jj)] = len(I)
     
                 # plot ?
                 # axs[jj].plot(np.mean(Ss[I, :], axis=0)*len(I))
@@ -337,19 +351,7 @@ class SyncMaker(object):
             for ZXY in ['Z', 'X', 'Y']:
                 self.SBXi[key]['S'+ZXY] = self.SBXi[key]['F'+ZXY][:, self.T1[key, :]]
                 del self.SBXi[key]['F'+ZXY]
-        # Output:  inds, indsC, SBXm, SBXi - обрезанные по L
-
-    def save_output(self, SBXi, SBXm):
-        # save output SBXi, SBXm:
-        for key in SBXi:
-            with h5py.File(f"SBX{key}.h5", 'w') as f:
-                group = f.create_group('SBX')
-                for sub_key in SBXi[key]:
-                    group.create_dataset(sub_key, data=SBXi[key][sub_key])
-        with h5py.File(f"SBXm.h5", 'w') as f:
-            group = f.create_group('SBX')
-            for sub_key in SBXm:
-                group.create_dataset(sub_key, data=SBXm[sub_key])
+        # Output:  self.inds, self.indsC, self.SBXm, self.SBXi - обрезанные по L
 
 
 def main():
