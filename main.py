@@ -277,8 +277,7 @@ class MainWindow(QMainWindow):
             edit_field.setMaximum(65000)
             edit_field.setValue(i_sbx*5)
             rtime = self.checked_files[filename]['DN']  # rtime - record time
-            rtime = [int(x) for x in rtime]
-            rtime = f'{rtime[2]:0.0f}-{rtime[1]:0.0f}-{rtime[0]:0.0f} {rtime[3]:0.0f}:{rtime[4]:0.0f}:{rtime[5]:0.0f}'
+            rtime = '{}-{}-{} {}:{}:{}'.format(*[f'{int(x):02d}' for x in rtime])
             time_label = QLabel(layout.parent())
             time_label.setObjectName(f"dT{i_sbx}TimeLabel")
             time_label.setText(f"Time: [{rtime}]")
