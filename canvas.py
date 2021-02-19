@@ -45,7 +45,7 @@ class Canvas(FigureCanvas):
             self.axs[i_xyz].label_outer()
             # self.axs[i_xyz].get_xaxis().get_major_formatter().set_useOffset(False)
             self.axs[i_xyz].fmt_xdata = lambda x: f'{x:.0f}'
-            self.axs[i_xyz].fmt_ydata = lambda x: f'{x:.0f}'
+            self.axs[i_xyz].fmt_ydata = lambda x: f'{x:.3f}'
         self.fig.suptitle(self.suptitle)
         self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
         self.f = self.zoom_factory(self.axs[0], base_scale=1.1)
