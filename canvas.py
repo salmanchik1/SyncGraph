@@ -27,7 +27,7 @@ class Canvas(FigureCanvas):
             for i in range(self.val_count):
                 if self.ticks_mode == 'seconds':
                     xvalues = [i / self.fd for i in range(len(self.funvalues[xyz][i]))]
-                elif self.ticks_mode == 'reports':
+                else:
                     xvalues = range(len(self.funvalues[xyz][i]))
                 self.axs[i_xyz].plot(
                     xvalues,
@@ -56,7 +56,7 @@ class Canvas(FigureCanvas):
             self.ticks_changed = True
             if self.ticks_mode == 'seconds':
                 self.xlim /= self.fd
-            elif self.ticks_mode == 'reports':
+            else:
                 self.xlim = (x * self.fd for x in self.xlim)
         self.val_count = len(self.funvalues[self.titles[0]])
         for i_xyz, xyz in enumerate(self.titles):
@@ -64,7 +64,7 @@ class Canvas(FigureCanvas):
             for i in range(self.val_count):
                 if self.ticks_mode == 'seconds':
                     xvalues = [i / self.fd for i in range(len(self.funvalues[xyz][i]))]
-                elif self.ticks_mode == 'reports':
+                else:
                     xvalues = range(len(self.funvalues[xyz][i]))
                 self.axs[i_xyz].plot(
                     xvalues,
