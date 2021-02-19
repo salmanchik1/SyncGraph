@@ -171,7 +171,6 @@ class SyncMaker(object):
                 self.main.ui.__dict__[f'{title}chart'] = self.chart
                 self.toolbar = NavigationToolbar(self.main.ui.__dict__[f'{title}chart'], widget)
                 self.main.ui.__dict__[f'{title}toolbar'] = self.toolbar
-                self.toolbar.setObjectName(f'{title}toolbar')
                 # Turn on pan/zoom mode from start
                 self.toolbar.pan()
                 self.main.clear_layout(widget.layout())
