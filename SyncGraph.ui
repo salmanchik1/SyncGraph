@@ -89,29 +89,6 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QSpinBox" name="tstrtEdit">
-          <property name="minimumSize">
-           <size>
-            <width>100</width>
-            <height>28</height>
-           </size>
-          </property>
-          <property name="maximum">
-           <number>65535</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>tstrt (start)</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
         <item row="3" column="1">
          <widget class="QSpinBox" name="LEdit">
           <property name="minimumSize">
@@ -131,10 +108,16 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Lstd (for std, reports)</string>
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="tstrtEdit">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>28</height>
+           </size>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
           </property>
          </widget>
         </item>
@@ -145,6 +128,23 @@
           </property>
           <property name="value">
            <number>150</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>tstrt (start)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Lstd (for std, reports)</string>
           </property>
          </widget>
         </item>

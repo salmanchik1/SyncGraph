@@ -276,10 +276,21 @@ class MainWindow(QMainWindow):
             edit_field.setMinimum(-65000)
             edit_field.setMaximum(65000)
             edit_field.setValue(i_sbx*5)
+            rtime = self.checked_files[filename]['DN']  # rtime - record time
+            rtime = [int(x) for x in rtime]
+            rtime = f'{rtime[2]:0.0f}-{rtime[1]:0.0f}-{rtime[0]:0.0f} {rtime[3]:0.0f}:{rtime[4]:0.0f}:{rtime[5]:0.0f}'
+            time_label = QLabel(layout.parent())
+            time_label.setObjectName(f"dT{i_sbx}TimeLabel")
+            time_label.setText(f"Time: [{rtime}]")
+            reports_label = QLabel(layout.parent())
+            reports_label.setObjectName(f"dT{i_sbx}ReportsLabel")
+            reports_label.setText(f"Reports: [{len(self.checked_files[filename]['SX'][0])}]")
             self.ui.__dict__[f'dT{i_sbx}Label'] = label
             self.ui.__dict__[f'dT{i_sbx}Edit'] = edit_field
-            layout.addWidget(label, i_sbx, 0, 1, 1)
-            layout.addWidget(edit_field, i_sbx, 1, 1, 1)
+            layout.addWidget(label, i_sbx * 2, 0, 1, 1)
+            layout.addWidget(edit_field, i_sbx * 2, 1, 1, 1)
+            layout.addWidget(time_label, i_sbx * 2 + 1, 0, 1, 1)
+            layout.addWidget(reports_label, i_sbx * 2 + 1, 1, 1, 1)
 
     def on_select_in_files(self, e=None):
         indexes = self.ui.inFilesListView.selectedIndexes()
