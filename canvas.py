@@ -48,7 +48,7 @@ class Canvas(FigureCanvas):
             self.axs[i_xyz].fmt_ydata = lambda x: f'{x:.3f}'
         self.fig.suptitle(self.suptitle)
         self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
-        self.f = self.zoom_factory(self.axs[0], base_scale=1.1)
+        self.zoom_factory(self.axs[0], base_scale=1.1)
         # plt.show()
 
     def reload(self, **kwargs):
