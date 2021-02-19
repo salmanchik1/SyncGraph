@@ -73,6 +73,7 @@ class SyncMakerGraph(SyncMaker):
             partial(self.on_click_checkbox, variable_name='extraFUP'))
         self.main.ui.reportsRadioButton.clicked.connect(self.on_click_ticks)  # 0 - debugging, 1 - unloading
         self.main.ui.secondsRadioButton.clicked.connect(self.on_click_ticks)  # 0 - debugging, 1 - unloading
+        self.ticks_mode = None
         self.on_click_ticks()
         self.on_select_sensor()
         self.SBXi = {i: x for i, x in enumerate(self.main.checked_files.values())}
@@ -152,12 +153,18 @@ class SyncMakerGraph(SyncMaker):
         print(f'{variable_name} = {self.__dict__[variable_name]}')
 
     def on_click_ticks(self):
-        if self.main.ui.reportsRadioButton.isChecked():
+        if not self.ticks_mode:
             self.ticks_mode = 'reports'
+        if 'chart' not in self.__dict__:
+            return
+        if self.main.ui.reportsRadioButton.isChecked():
+            if self.ticks_mode == 'seconds':
+                self.ticks_mode = 'reports'
+                self.chart.ticks_changed = False
         elif self.main.ui.secondsRadioButton.isChecked():
-            self.ticks_mode = 'seconds'
-        if 'chart' in self.__dict__:
-            self.ticks_changed = False
+            if self.ticks_mode == 'reports':
+                self.ticks_mode = 'seconds'
+                self.chart.ticks_changed = False
         print(f'mode = {self.ticks_mode}')
 
     def reload(self, **kwargs):

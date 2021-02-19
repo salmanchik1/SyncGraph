@@ -21,6 +21,7 @@ class Canvas(FigureCanvas):
         if self.widget:
             plt.close()
         super(Canvas, self).__init__(self.fig)
+        self.ticks_changed = True
         self.setParent(parent)
         self.val_count = len(self.funvalues[self.titles[0]])
         for i_xyz, xyz in enumerate(self.titles):
@@ -52,18 +53,12 @@ class Canvas(FigureCanvas):
         self.__dict__.update(kwargs)
         self.xlim = self.axs[0].get_xlim()
         self.ylim = self.axs[0].get_ylim()
-        if not self.ticks_changed:
-            self.ticks_changed = True
-            if self.ticks_mode == 'seconds':
-                self.xlim /= self.fd
-            else:
-                self.xlim = (x * self.fd for x in self.xlim)
         self.val_count = len(self.funvalues[self.titles[0]])
         for i_xyz, xyz in enumerate(self.titles):
             self.axs[i_xyz].clear()
             for i in range(self.val_count):
                 if self.ticks_mode == 'seconds':
-                    xvalues = [i / self.fd for i in range(len(self.funvalues[xyz][i]))]
+                    xvalues = [x / self.fd for x in range(len(self.funvalues[xyz][i]))]
                 else:
                     xvalues = range(len(self.funvalues[xyz][i]))
                 self.axs[i_xyz].plot(
@@ -82,6 +77,12 @@ class Canvas(FigureCanvas):
             self.axs[i_xyz].update(prop)
         self.fig.suptitle(self.suptitle)
         self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
+        if not self.ticks_changed:
+            self.ticks_changed = True
+            if self.ticks_mode == 'seconds':
+                self.xlim /= self.fd
+            else:
+                self.xlim = (x * self.fd for x in self.xlim)
         self.axs[0].set_xlim(self.xlim)
         self.axs[0].set_ylim(self.ylim)
         self.fig.canvas.draw()
