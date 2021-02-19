@@ -218,10 +218,10 @@ class Ui_syncGraphMainWindow(object):
         self.ticksGroupBox.setObjectName("ticksGroupBox")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.ticksGroupBox)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.reportsRadioButton = QtWidgets.QRadioButton(self.ticksGroupBox)
-        self.reportsRadioButton.setChecked(True)
-        self.reportsRadioButton.setObjectName("reportsRadioButton")
-        self.verticalLayout_3.addWidget(self.reportsRadioButton)
+        self.countsRadioButton = QtWidgets.QRadioButton(self.ticksGroupBox)
+        self.countsRadioButton.setChecked(True)
+        self.countsRadioButton.setObjectName("countsRadioButton")
+        self.verticalLayout_3.addWidget(self.countsRadioButton)
         self.secondsRadioButton = QtWidgets.QRadioButton(self.ticksGroupBox)
         self.secondsRadioButton.setObjectName("secondsRadioButton")
         self.verticalLayout_3.addWidget(self.secondsRadioButton)
@@ -257,7 +257,7 @@ class Ui_syncGraphMainWindow(object):
         self.label_7.setText(_translate("syncGraphMainWindow", "lev (incoming signal noise level)"))
         self.extraFUPCheckBox.setText(_translate("syncGraphMainWindow", "extraFUP (apply narrowband interference)"))
         self.ticksGroupBox.setTitle(_translate("syncGraphMainWindow", "Graph ticks"))
-        self.reportsRadioButton.setText(_translate("syncGraphMainWindow", "reports"))
+        self.countsRadioButton.setText(_translate("syncGraphMainWindow", "counts"))
         self.secondsRadioButton.setText(_translate("syncGraphMainWindow", "seconds"))
 
 

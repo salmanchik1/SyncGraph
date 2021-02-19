@@ -71,7 +71,7 @@ class SyncMakerGraph(SyncMaker):
         self.extraFUP = self.main.ui.extraFUPCheckBox.isChecked()
         self.main.ui.extraFUPCheckBox.clicked.connect(
             partial(self.on_click_checkbox, variable_name='extraFUP'))
-        self.main.ui.reportsRadioButton.clicked.connect(self.on_click_ticks)  # 0 - debugging, 1 - unloading
+        self.main.ui.countsRadioButton.clicked.connect(self.on_click_ticks)  # 0 - debugging, 1 - unloading
         self.main.ui.secondsRadioButton.clicked.connect(self.on_click_ticks)  # 0 - debugging, 1 - unloading
         self.ticks_mode = None
         self.on_click_ticks()
@@ -281,15 +281,15 @@ class MainWindow(QMainWindow):
             time_label = QLabel(layout.parent())
             time_label.setObjectName(f"dT{i_sbx}TimeLabel")
             time_label.setText(f"Time: [{rtime}]")
-            reports_label = QLabel(layout.parent())
-            reports_label.setObjectName(f"dT{i_sbx}ReportsLabel")
-            reports_label.setText(f"Reports: [{len(self.checked_files[filename]['SX'][0])}]")
+            counts_label = QLabel(layout.parent())
+            counts_label.setObjectName(f"dT{i_sbx}CountsLabel")
+            counts_label.setText(f"Counts: [{len(self.checked_files[filename]['SX'][0])}]")
             self.ui.__dict__[f'dT{i_sbx}Label'] = label
             self.ui.__dict__[f'dT{i_sbx}Edit'] = edit_field
             layout.addWidget(label, i_sbx * 2, 0, 1, 1)
             layout.addWidget(edit_field, i_sbx * 2, 1, 1, 1)
             layout.addWidget(time_label, i_sbx * 2 + 1, 0, 1, 1)
-            layout.addWidget(reports_label, i_sbx * 2 + 1, 1, 1, 1)
+            layout.addWidget(counts_label, i_sbx * 2 + 1, 1, 1, 1)
 
     def on_select_in_files(self, e=None):
         indexes = self.ui.inFilesListView.selectedIndexes()

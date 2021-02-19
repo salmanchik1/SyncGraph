@@ -476,9 +476,9 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QRadioButton" name="reportsRadioButton">
+         <widget class="QRadioButton" name="countsRadioButton">
           <property name="text">
-           <string>reports</string>
+           <string>counts</string>
           </property>
           <property name="checked">
            <bool>true</bool>
