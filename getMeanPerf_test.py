@@ -74,7 +74,6 @@ class SyncMaker(object):
         self.df = None
         self.axis = None
         self.chart = None
-        self.selected_s_name = None
         self.ticks_mode = None
         self.ticks_changed = True
         self.__dict__.update(kwargs)
