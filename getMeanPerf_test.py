@@ -74,6 +74,7 @@ class SyncMaker(object):
         self.df = None
         self.axis = None
         self.chart = None
+        self.ticks_changed = True
         self.__dict__.update(kwargs)
 
 
@@ -158,6 +159,8 @@ class SyncMaker(object):
             'titles': titles,
             'widget': widget,
             'fd': self.fd,
+            'ticks_mode': self.ticks_mode,
+            'ticks_changed': self.ticks_changed,
         }
         if self.chart is None:
             self.chart = Canvas(parent=widget, **kwargs)

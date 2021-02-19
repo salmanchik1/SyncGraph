@@ -71,9 +71,9 @@ class SyncMakerGraph(SyncMaker):
         self.extraFUP = self.main.ui.extraFUPCheckBox.isChecked()
         self.main.ui.extraFUPCheckBox.clicked.connect(
             partial(self.on_click_checkbox, variable_name='extraFUP'))
-        self.main.ui.debuggingRadioButton.clicked.connect(self.on_click_mode)  # 0 - debugging, 1 - unloading
-        self.main.ui.unloadingRadioButton.clicked.connect(self.on_click_mode)  # 0 - debugging, 1 - unloading
-        self.on_click_mode()
+        self.main.ui.reportsRadioButton.clicked.connect(self.on_click_ticks)  # 0 - debugging, 1 - unloading
+        self.main.ui.secondsRadioButton.clicked.connect(self.on_click_ticks)  # 0 - debugging, 1 - unloading
+        self.on_click_ticks()
         self.on_select_sensor()
         self.SBXi = {i: x for i, x in enumerate(self.main.checked_files.values())}
         self.main.ui.exportButton.clicked.connect(self.on_click_export)
@@ -87,7 +87,7 @@ class SyncMakerGraph(SyncMaker):
             'dT': self.dT,  # dT: сдвиги каждого SBX файла, отсчеты;
             'Fpass1': self.Fpass1,  # Fpass1: начальная частота фильтрации, Гц;
             'Fpass2': self.Fpass2,  # Fpass2: конечная частота фильтрации, Гц;
-            'mode': self.mode,  # mode: debugging - режим отладки; unloading - режим выгрузки;
+            'mode': 'debugging',  # mode: debugging - режим отладки; unloading - режим выгрузки;
             'lev': self.lev,  # lev: уровень шума входящего сигнала для отбраковки
             'ksen': self.ksen,  # ksen: какой канал смотреть, номер (название) канала (датчика, сенсора?)
             'extraFUP': self.extraFUP,  # применять доп.фильтрацию узкополосных помех checkbox
@@ -151,12 +151,14 @@ class SyncMakerGraph(SyncMaker):
         self.__dict__[variable_name] = self.main.ui.__dict__[variable_name + 'CheckBox'].isChecked()
         print(f'{variable_name} = {self.__dict__[variable_name]}')
 
-    def on_click_mode(self):
-        if self.main.ui.debuggingRadioButton.isChecked():
-            self.mode = 'debugging'
-        elif self.main.ui.unloadingRadioButton.isChecked():
-            self.mode = 'unloading'
-        print(f'mode = {self.mode}')
+    def on_click_ticks(self):
+        if self.main.ui.reportsRadioButton.isChecked():
+            self.ticks_mode = 'reports'
+        elif self.main.ui.secondsRadioButton.isChecked():
+            self.ticks_mode = 'seconds'
+        if 'chart' in self.__dict__:
+            self.ticks_changed = False
+        print(f'mode = {self.ticks_mode}')
 
     def reload(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -338,12 +340,12 @@ class MainWindow(QMainWindow):
         """Raises on main window closing"""
         self.export_state()
         event.accept()
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Space:
-            if self.sync_maker is not None:
-                self.sync_maker.on_click_build()
-        event.accept()
+    #
+    # def keyPressEvent(self, event):
+    #     if event.key() == Qt.Key_Space:
+    #         if self.sync_maker is not None:
+    #             self.sync_maker.on_click_build()
+    #     event.accept()
 
 
 def main():
