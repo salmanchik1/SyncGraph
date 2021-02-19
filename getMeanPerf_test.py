@@ -144,12 +144,13 @@ class SyncMaker(object):
         labels = {}
         funvalues = {}
         titles = ['FZ', 'FX', 'FY']
-        for title in titles:
+        disp_titles = ['Z', 'X', 'Y']
+        for i_title, title in enumerate(disp_titles):
             labels[title] = []
             funvalues[title] = []
             for key in self.SBXi:
                 labels[title].append(os.path.basename(self.file_paths[key]))
-                funvalues[title].append(self.SBX_plot[key][title][self.T1[key, :]] * self.k[key])
+                funvalues[title].append(self.SBX_plot[key][titles[i_title]][self.T1[key, :]] * self.k[key])
         kwargs = {
             'xlabel': 'Time',
             'ylabel': 'Amplitude',
@@ -157,7 +158,7 @@ class SyncMaker(object):
             'funvalues': funvalues,
             'suptitle': f'Sensor: {self.selected_s_name}',
             'lw': 0.8,
-            'titles': titles,
+            'titles': disp_titles,
             'widget': widget,
             'fd': self.fd,
             'ticks_mode': self.ticks_mode,
