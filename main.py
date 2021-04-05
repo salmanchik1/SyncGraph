@@ -154,15 +154,15 @@ class SyncMakerGraph(SyncMaker):
 
     def on_click_ticks(self):
         if not self.ticks_mode:
-            self.ticks_mode = 'reports'
+            self.ticks_mode = 'counts'
         if 'chart' not in self.__dict__:
             return
-        if self.main.ui.reportsRadioButton.isChecked():
+        if self.main.ui.countsRadioButton.isChecked():
             if self.ticks_mode == 'seconds':
-                self.ticks_mode = 'reports'
+                self.ticks_mode = 'counts'
                 self.chart.ticks_changed = False
         elif self.main.ui.secondsRadioButton.isChecked():
-            if self.ticks_mode == 'reports':
+            if self.ticks_mode == 'counts':
                 self.ticks_mode = 'seconds'
                 self.chart.ticks_changed = False
         print(f'mode = {self.ticks_mode}')
@@ -254,6 +254,7 @@ class MainWindow(QMainWindow):
         else:
             if self.sensors is not None:
                 # clear out all the sensors data
+                self.sensors.deleteLater()
                 self.sensors = SensorsModel(ids=[])
                 self.ui.sensorsListView.setModel(self.sensors)
 

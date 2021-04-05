@@ -49,6 +49,7 @@ class Canvas(FigureCanvas):
         self.fig.suptitle(self.suptitle)
         self.axs[0].legend(loc='upper right', ncol=1)  # self.val_count)
         self.zoom_factory(self.axs[0], base_scale=1.1)
+        self.window_factory(self.axs[0])
         # plt.show()
 
     def reload(self, **kwargs):
@@ -130,4 +131,18 @@ class Canvas(FigureCanvas):
         fig.canvas.mpl_connect('scroll_event', zoom_fun)
         #return the function
         return zoom_fun
+
+    @staticmethod
+    def window_factory(ax):
+        """Gets window by mouse clicks"""
+        def get_window(event):
+            xdata = event.xdata  # get event x location
+            ydata = event.ydata  # get event y location
+            pass
+        fig = ax.get_figure()  # get the figure of interest
+        # attach the call back
+        fig.canvas.mpl_connect('scroll_event', get_window)
+        #return the function
+        return get_window
+
 
