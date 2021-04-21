@@ -140,10 +140,10 @@ class SyncMakerGraph(SyncMaker):
 
     def on_select_sensor(self):
         try:
-            selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row() + 1
+            selected_index = self.main.ui.sensorsListView.selectedIndexes()[0].row()
         except Exception:
-            selected_index = 1
-        self.selected_s_name = f'{selected_index:05.0f}'
+            selected_index = 0
+        self.selected_s_name = self.main.sensors.ids[selected_index]
         self.ksen = self.main.s_names[self.selected_s_name]
         # self.make(widget=self.main.ui.graphsContainer)
         print(self.ksen)
