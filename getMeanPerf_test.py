@@ -112,7 +112,7 @@ class SyncMaker(object):
         for key in self.SBXi:
             self.SBX_plot[key] = dict()
             for XYZ in ['Z', 'X', 'Y']:
-                signal = getSBXsen(self.SBXi[key], 'S'+XYZ, self.ksen[key])
+                signal = getSBXsen(self.SBXi[key], 'S'+XYZ, int(self.selected_s_name))  # self.ksen[key])
                 if self.extraFUP:
                     ldf = int(self.LenOfSignal * self.df / self.fd)
                     n_fup = ldf if ldf else ldf - 1
