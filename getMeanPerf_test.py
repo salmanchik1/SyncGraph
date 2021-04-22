@@ -231,10 +231,9 @@ class SyncMaker(object):
             'X': np.zeros(self.NumCh, dtype=int),
             'Y': np.zeros(self.NumCh, dtype=int)
         }
-    
-        self.NamesOfSen_lst = []
-        for sen_ind, sen in enumerate(self.NamesOfSen):
-            self.NamesOfSen_lst.append(sen)
+
+        self.NamesOfSen_lst = sorted(list(self.NamesOfSen))
+        for sen_ind, sen in enumerate(self.NamesOfSen_lst):
             jj = 0
             # fig, axs = plt.subplots(3, 1, constrained_layout=True)
             # fig.suptitle('Channel number: ' + str(int(SBXi[0]['field'][0, ch])), fontsize=16)
