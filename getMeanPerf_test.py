@@ -196,10 +196,10 @@ class SyncMaker(object):
                         medsp = medfilt2d(norsp.reshape(1, -1), (1, n_fup))[0]  # на порядок быстрее medfilt
                         setSBXsen(self.SBXi[key], 'S' + XYZ, ksen, self.acor * (np.fft.ifft((sp / norsp) * medsp)).real)
                 # self.SBXi[key]['F'+XYZ] = lfilter(self.b, 1, self.SBXi[key]['S'+XYZ])[:, int((len(self.b) - 1)/2):]
-                if self.main.ui.filterCheckBox.isChecked():
-                    self.SBXi[key]['F' + XYZ] = filtfilt(self.b, 1, self.SBXi[key]['S' + XYZ])
-                else:
-                    self.SBXi[key]['F' + XYZ] = self.SBXi[key]['S' + XYZ]
+                # if self.main.ui.filterCheckBox.isChecked():
+                #     self.SBXi[key]['F' + XYZ] = filtfilt(self.b, 1, self.SBXi[key]['S' + XYZ])
+                # else:
+                self.SBXi[key]['F' + XYZ] = self.SBXi[key]['S' + XYZ]
         # создаем усредненный SBX
         # field = np.zeros((4, len(self.NamesOfSen)))
         # field[0, :] = np.array(list(self.NamesOfSen))
