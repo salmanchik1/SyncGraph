@@ -132,6 +132,12 @@ class Canvas(FigureCanvas):
         #return the function
         return zoom_fun
 
+    def refresh_zoom(self, maxX, maxY):
+        indent = 0.05
+        self.axs[0].set_ylim(-maxY * (1 + indent), maxY * (1 + indent))
+        self.axs[0].set_xlim(-maxX * indent, maxX * (1 + indent))
+        self.axs[0].get_figure().canvas.draw_idle()  # force re-draw
+
     @staticmethod
     def window_factory(ax):
         """Gets window by mouse clicks"""

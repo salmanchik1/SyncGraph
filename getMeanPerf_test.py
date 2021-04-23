@@ -145,12 +145,14 @@ class SyncMaker(object):
         funvalues = {}
         titles = ['FZ', 'FX', 'FY']
         disp_titles = ['Z', 'X', 'Y']
+        maxY = 0  # Maximal amplitude value of the function, to make primordial zoom of the plot
         for i_title, title in enumerate(disp_titles):
             labels[title] = []
             funvalues[title] = []
             for key in self.SBXi:
                 labels[title].append(os.path.basename(self.file_paths[key]))
                 funvalues[title].append(self.SBX_plot[key][titles[i_title]][self.T1[key, :]] * self.k[key])
+                maxY = max(maxY, *map(abs, funvalues[title][key]))
         kwargs = {
             'xlabel': 'Time',
             'ylabel': 'Amplitude',
@@ -179,6 +181,13 @@ class SyncMaker(object):
                 widget.layout().addWidget(self.chart)
         else:
             self.chart.reload(**kwargs)
+        if self.ticks_mode == 'seconds':
+            maxX = list(funvalues.values())[0][0].size / self.fd
+        if self.ticks_mode in ['reports', None]:
+            maxX = list(funvalues.values())[0][0].size
+        if self.variable_changed:
+            self.chart.refresh_zoom(maxX=maxX, maxY=maxY)
+            self.variable_changed = False
 
     def get_output(self):
         if self.SBXi is None:

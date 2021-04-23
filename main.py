@@ -58,6 +58,7 @@ class SyncMakerGraph(SyncMaker):
     """Value synchronizes with visual component"""
 
     def __init__(self,  main_window=None):
+        self.variable_changed = True
         self.selected_s_name = None
         if main_window is None:
             print('Main caller class not founded.')
@@ -136,6 +137,7 @@ class SyncMakerGraph(SyncMaker):
     def on_change_edit(self, variable_name):
         # I take the value from the gui widget and put it in the variable named the same
         self.__dict__[variable_name] = self.main.ui.__dict__[f'{variable_name}Edit'].value()
+        self.variable_changed = True
         print(f'{variable_name} = {self.__dict__[f"{variable_name}"]}')
 
     def on_select_sensor(self):
@@ -276,7 +278,7 @@ class MainWindow(QMainWindow):
             edit_field.setObjectName(f"dT{i_sbx}Edit")
             edit_field.setMinimum(-65000)
             edit_field.setMaximum(65000)
-            edit_field.setValue(i_sbx*5)
+            edit_field.setValue(0)
             rtime = self.checked_files[filename]['DN']  # rtime - record time
             rtime = '{}-{}-{} {}:{}:{}'.format(*[f'{int(x):02d}' for x in rtime])
             time_label = QLabel(layout.parent())
