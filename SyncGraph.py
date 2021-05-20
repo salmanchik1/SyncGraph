@@ -242,7 +242,7 @@ class Ui_syncGraphMainWindow(object):
         self.buildButton.setText(_translate("syncGraphMainWindow", "Build"))
         self.exportButton.setText(_translate("syncGraphMainWindow", "Export"))
         self.groupBox_4.setTitle(_translate("syncGraphMainWindow", "Noisy channels detection"))
-        self.label_7.setText(_translate("syncGraphMainWindow", "Treshold STD noise level"))
+        self.label_7.setText(_translate("syncGraphMainWindow", "Threshold STD noise level"))
         self.label_6.setText(_translate("syncGraphMainWindow", "Length of noise segment"))
         self.groupBox_2.setTitle(_translate("syncGraphMainWindow", "Filtering"))
         self.label_5.setText(_translate("syncGraphMainWindow", "Band pass END"))
